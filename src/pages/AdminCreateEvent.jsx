@@ -38,7 +38,7 @@ export default function AdminCreateEventForm() {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch('http://localhost:5350/api/events', {
+      const res = await fetch('https://fdp.met.edu/api/events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
