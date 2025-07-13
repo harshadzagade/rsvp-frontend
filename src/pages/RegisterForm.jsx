@@ -46,14 +46,34 @@ export default function RegisterForm(props) {
 
   const validate = () => {
     const newErrors = {};
+
     event.formFields.forEach(field => {
-      if (field.required && !formData[field.name]) {
+      const value = formData[field.name];
+
+      if (field.required && !value) {
         newErrors[field.name] = `${field.label} is required`;
       }
+
+      // Additional validations
+      if (field.type === 'email' && value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          newErrors[field.name] = 'Please enter a valid email address';
+        }
+      }
+
+      if (field.type === 'tel' && value) {
+        const phoneRegex = /^[6-9]\d{9}$/; // Accepts Indian mobile numbers starting with 6-9
+        if (!phoneRegex.test(value)) {
+          newErrors[field.name] = 'Please enter a valid 10-digit mobile number';
+        }
+      }
     });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -93,9 +113,9 @@ export default function RegisterForm(props) {
   if (!event) return <div className="p-6 text-center text-red-600 animate-fade">{error || 'Event not found.'}</div>;
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 50 }} 
-      animate={{ opacity: 1, y: 0 }} 
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className="min-h-screen bg-brand-50 text-brand-900 p-4 md:p-8 max-w-2xl mx-auto"
     >
