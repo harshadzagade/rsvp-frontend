@@ -23,13 +23,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/register/:eventId" element={<RegisterForm />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
         <Route path="/payment-failed" element={<PaymentFailedPage />} />
-        <Route path="/:slug" element={<IMMLandingPage />} />
-
-
         <Route path="/not-found" element={<NotFoundPage />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/create-event" element={<AdminCreateEvent />} />
+
+        {/* Important: Catch-all slug route should go LAST */}
+        <Route path="/:slug" element={<IMMLandingPage />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

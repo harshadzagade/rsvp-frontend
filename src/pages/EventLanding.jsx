@@ -1,9 +1,14 @@
-import React from 'react'
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const EventLanding = () => {
-  return (
-    <div>EventLanding</div>
-  )
-}
+  const navigate = useNavigate();
 
-export default EventLanding
+  useEffect(() => {
+    navigate('/imm_mdp');
+  }, [navigate]);
+
+  return null;
+};
+
+export default EventLanding;
