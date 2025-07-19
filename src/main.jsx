@@ -12,6 +12,7 @@ import AdminCreateEvent from './pages/AdminCreateEvent';
 import { ThankYouPage, PaymentFailedPage } from './pages/ThankYouAndFailurePages';
 
 import IMMLandingPage from './pages/landing/IMMLandingPage';
+import ConferenceLandingPage from './pages/landing/ConferenceLandingPage';
 
 
 
@@ -30,6 +31,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
         {/* Important: Catch-all slug route should go LAST */}
         <Route path="/:slug" element={<IMMLandingPage />} />
+        <Route path="/conference-landing" element={<ConferenceLandingPage />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

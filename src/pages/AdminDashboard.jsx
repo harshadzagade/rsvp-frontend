@@ -91,10 +91,10 @@ export default function AdminDashboard() {
           RegisteredAt: new Date(rsvp.createdAt).toLocaleString()
         };
 
-        // Add flattened formData fields
         if (rsvp.formData && typeof rsvp.formData === 'object') {
           Object.entries(rsvp.formData).forEach(([key, value]) => {
-            row[`Form: ${key}`] = value;
+            const formattedKey = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize first letter
+            row[formattedKey] = value;
           });
         }
 
@@ -113,6 +113,7 @@ export default function AdminDashboard() {
       alert('Failed to export RSVP data. Please try again.');
     }
   };
+
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
@@ -166,7 +167,7 @@ export default function AdminDashboard() {
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Date</th>
                   {rsvpFormKeys.map(key => (
-                    <th key={key} className="px-4 py-3">Form: {key}</th>
+                    <th key={key} className="px-4 py-3">{key.charAt(0).toUpperCase() + key.slice(1)}</th>
                   ))}
                 </tr>
               </thead>
