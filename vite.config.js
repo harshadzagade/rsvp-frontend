@@ -9,7 +9,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://fdp.met.edu',
+        target: 'https://events.met.edu',
         changeOrigin: true,
         secure: false,
       },
