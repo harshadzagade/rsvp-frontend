@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: ['fdp.met.edu'], // ✅ Add this line
+    allowedHosts: ['events.met.edu'], // ✅ Add this line
     host: true,    
     port: 5173,
     proxy: {
