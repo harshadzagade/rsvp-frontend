@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 
 export default function RegisterForm(props) {
   const { eventId: paramEventId } = useParams();
+  const [calculatedFee, setCalculatedFee] = useState(null);
   const navigate = useNavigate();
 
   const eventId = props?.eventId || paramEventId;
@@ -43,6 +44,37 @@ export default function RegisterForm(props) {
     setFormData(prev => ({ ...prev, [name]: value }));
     setErrors(prev => ({ ...prev, [name]: '' }));
   };
+
+  useEffect(() => {
+    if (!event) return;
+
+    const baseFee = event.fee;
+    const rules = event.feeOptions?.options || [];
+
+    let matchedFee = baseFee;
+    let matchedCurrency = 'INR';
+
+    for (const rule of rules) {
+      const logic = rule.logic || 'AND';
+      const conditions = rule.conditions || [];
+
+      const matches = conditions.map(cond => {
+        const userValue = (formData[cond.field] || '').toString().toLowerCase();
+        const ruleValue = (cond.value || '').toLowerCase();
+        return userValue === ruleValue;
+      });
+
+      const isMatch = logic === 'AND' ? matches.every(Boolean) : matches.some(Boolean);
+
+      if (isMatch) {
+        matchedFee = rule.fee;
+        matchedCurrency = rule.currency || 'INR';
+        break;
+      }
+    }
+
+    setCalculatedFee(`${matchedCurrency === 'INR' ? '₹' : matchedCurrency + ' '}${matchedFee}`);
+  }, [formData, event]);
 
   const validate = () => {
     const newErrors = {};
@@ -164,6 +196,11 @@ export default function RegisterForm(props) {
             )}
           </div>
         ))}
+        {calculatedFee && (
+          <div className="text-lg font-semibold text-green-700 border border-green-300 bg-green-50 px-4 py-2 rounded">
+            Total Fee: {calculatedFee}
+          </div>
+        )}
         <button type="submit" className="w-full bg-red-600 hover:bg-brand-700 text-white py-2 rounded-lg">
           Proceed to Payment
         </button>

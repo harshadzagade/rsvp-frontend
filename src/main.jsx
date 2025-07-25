@@ -30,7 +30,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/admin/create-event" element={<AdminCreateEvent />} />
 
         {/* Important: Catch-all slug route should go LAST */}
-        <Route path="/:slug" element={<IMMLandingPage />} />
+        <Route path="/:slug" element={<ConferenceLandingPage />} />
         <Route path="/conference-landing" element={<ConferenceLandingPage />} />
       </Routes>
     </BrowserRouter>
