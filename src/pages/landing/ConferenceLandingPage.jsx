@@ -239,6 +239,9 @@ const ConferenceLandingPage = () => {
               <p className="text-justify leading-relaxed text-gray-700 mb-4">
                 Abstracts up to 300 words based on qualitative and quantitative research papers, case studies, or working papers are invited from industry practitioners, academicians, research scholars, consultants, and students on the following themes. The sub-themes are indicative but not exhaustive:
               </p>
+              <p>
+                Research Papers should focus on the following areas:
+              </p>
               <div className="space-y-2">
                 <Accordion title="Digital Persuasion: Marketing in the Era of AI & Data-Driven World">
                   <ul className="list-disc list-inside space-y-2 text-gray-700">
@@ -322,8 +325,8 @@ const ConferenceLandingPage = () => {
               <section className="bg-gray-50 p-6 rounded-lg shadow-md">
                 <h2 className="text-2xl font-semibold text-red-600 mb-4">Important Dates</h2>
                 <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Submission of Abstract (300 words limit): 2nd August 2025</li>
-                  <li>Announcement of Acceptance of Abstract: 16th August 2025</li>
+                  <li>Submission of Abstract (300 words limit): 10th August 2025</li>
+                  <li>Announcement of Acceptance of Abstract: 25th August 2025</li>
                   <li>Last Date for Full Paper Submission: 8th September 2025</li>
                   <li>Last Date of Registration: 15th September 2025</li>
                   <li>Conference Day (Paper Presentation): 20th September 2025</li>
