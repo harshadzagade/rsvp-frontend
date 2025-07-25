@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 export default function AdminCreateEventForm() {
   const navigate = useNavigate();
+  const [editingFieldIndex, setEditingFieldIndex] = useState(null);
+
 
   const [form, setForm] = useState({
     title: '',
@@ -36,6 +38,7 @@ export default function AdminCreateEventForm() {
 
   const addFormField = () => {
     if (!fieldInput.name || !fieldInput.label) return;
+
     const newField = {
       ...fieldInput,
       options:
@@ -43,11 +46,25 @@ export default function AdminCreateEventForm() {
           ? fieldInput.options.split(',').map((opt) => opt.trim())
           : undefined,
     };
-    setForm((prev) => ({
-      ...prev,
-      formFields: [...prev.formFields, newField],
-    }));
-    setFieldInput({ name: '', label: '', type: 'text', required: false, options: '' });
+
+    if (editingFieldIndex !== null) {
+      // Update existing field
+      setForm((prev) => {
+        const updatedFields = [...prev.formFields];
+        updatedFields[editingFieldIndex] = newField;
+        return { ...prev, formFields: updatedFields };
+      });
+      setEditingFieldIndex(null);
+    } else {
+      // Add new field
+      setForm((prev) => ({
+        ...prev,
+        formFields: [...prev.formFields, newField],
+      }));
+    }
+
+    // ✅ Retain type, reset others
+    setFieldInput((prev) => ({ ...prev, name: '', label: '', options: '', required: false }));
   };
 
   const addCondition = () => {
@@ -225,8 +242,54 @@ export default function AdminCreateEventForm() {
             <span className="ml-2">Required</span>
           </label>
           <button type="button" onClick={addFormField} className="ml-4 bg-blue-600 text-white px-4 py-1 rounded">
-            Add Field
+            {editingFieldIndex !== null ? 'Update Field' : 'Add Field'}
           </button>
+          {form.formFields.length > 0 && (
+            <div className="mt-4">
+              <h4 className="font-semibold mb-2">Added Fields:</h4>
+              <ul className="space-y-2">
+                {form.formFields.map((field, index) => (
+                  <li key={index} className="bg-gray-100 p-2 rounded flex justify-between items-center">
+                    <span>{field.label} ({field.name}) - {field.type}{field.required ? ' *' : ''}</span>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFieldInput({
+                            name: field.name,
+                            label: field.label,
+                            type: field.type,
+                            required: field.required,
+                            options: field.options ? field.options.join(', ') : '',
+                          });
+                          setEditingFieldIndex(index);
+                        }}
+                        className="text-blue-600 mr-2"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setForm((prev) => ({
+                            ...prev,
+                            formFields: prev.formFields.filter((_, i) => i !== index),
+                          }));
+                          if (editingFieldIndex === index) {
+                            setFieldInput({ name: '', label: '', type: 'text', required: false, options: '' });
+                            setEditingFieldIndex(null);
+                          }
+                        }}
+                        className="text-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <h3 className="font-semibold mt-6">Define Fee Rule</h3>
