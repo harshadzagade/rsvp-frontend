@@ -13,12 +13,12 @@ const tabs = [
   {
     label: "About MET",
     content:
-      "Just a stone's throw away from the Arabian Sea, is an institution that is creating waves. Because, it is quite simply, a cut above the rest. The MET League of Colleges is a conglomerate of premiere educational institutions, driven by a single-minded focus on imparting quality education to make students sharp. Established in 1989, with a mission to redefine the system of education, Mumbai Educational Trust (MET) is a professionally managed, multi-disciplinary and multi-faceted oasis of knowledge. Its premiere educational institutes conduct university accredited and autonomous courses. The grant of the ISO 9001:2015 certification is an acknowledgement of the institution's capability to deliver professional education that meets the highest standards of professionalism worldwide. All this, to help young professionals face the challenges of life. And make their mark in the corporate world. Training is imparted round-the-clock, seven days a week. Projects and assignments are given utmost importance and students learn on the job. Application-oriented knowledge, garnered in the lecture halls, is applied to industry assignments. The faculty spares no effort to make the students razor sharp, so that they make their mark in the corporate world. No effort has been spared, to create an environment that encourages students, to push the limits of their minds. At MET thousands of students and faculty are involved in delivering unique learning systems, through ultra-modern infrastructure and academic rigour. MET Institutes are ISO certified, with affiliations to the University of Mumbai, Directorate of Technical Education, All India Council of Technical Education, MSBTE, Pharmacy Council of India, C-DAC - Ministry of Communications and Information Technology and The Chartered Insurance Institute (CII), London. MET is a recognised teaching centre of awarding body University of London and also has strategic institutional collaborations with the NCC Education, UK. There are about 21 institutes housed in state-of-the-art campuses located in Mumbai and Nashik."
+      "Just steps from the Arabian Sea, Mumbai Educational Trust has been making waves in education since 1989. A professionally managed and ISO 9001:2015 certified institution, MET offers university-accredited and autonomous courses through its 21 institutes across Mumbai and Nashik. Known for its academic rigor and industry-focused learning, MET empowers students with hands-on experience, innovative training, and global exposure. Affiliated with top regulatory bodies, including AICTE, NBA, NAAC, MSBTE, PCI, and University of Mumbai, and partnered with institutions such as University of London and NCC Education UK, MET continues to shape sharp minds ready for the corporate world."
   },
   {
     label: "About MET IMM",
     content:
-      "Established in 2005, MET Institute of Mass Media has grown into a prestigious institution at the forefront of Mass Communication and Media Management education in India under the 37 years rich legacy of Mumbai Educational Trust which is a professionally managed, multi-disciplinary and multi-faceted oasis of academic and professional knowledge. With a philosophy grounded in the 3A of Media Education – Acquire, Assemble, and Apply – MET Institute of Mass Media focuses on blending academic insight with real-world application to shape the media leaders of tomorrow. MET has consistently received accolades for its academic excellence and innovative pedagogy. It was conferred the title of ‘Outstanding Institute for Mass Media Management of the Year’ at the World Education Summit Awards 2019, and ranked 4th Best in Advertising & PR and 9th Best Post Graduate Media School in India by the Edutainment Awards 2017. In recognition of its commitment to inclusive learning, MET received the Unity in Diversity Educational Institute Award by the Global Dialogue Foundation and United Nations Alliance of Civilizations (UNAOC) in 2016. Adding to its list of achievements, MET Institute of Mass Media was recently awarded the prestigious DIAMOND Rating by QS I-GAUGE (Indian College Ratings) in 2025– a testament to its performance against rigorous quality benchmarks in higher education. Our PG programme is among the top-ranked specialized offerings among emerging B-Schools, as per The Times of India. The institute’s strategic collaboration with prominent media organisations in India enriches the curriculum with valuable industry exposure. MET Institute of Mass Media features cutting-edge facilities, including a fully operational in-house studio complex, media-centric classrooms, and a comprehensive library. Over the past two decades, the institute has cultivated a strong alumni network, with professionals working across top-tier organizations in the media ecosystem. Our students have recently secured placements with renowned media firms such as Jio Creative Labs, Zee Entertainment, Scarecrow, Madison World, ABP News, Laqshya Media, VMLY&R, Famous Innovations, Rajshree Entertainment, The Times of India, Lodestar, and SoCheers, etc. highlighting the institution’s strong industry interface and focus on employability. A dedicated Career Management Centre supports students from admission to final placement, providing personalized mentorship, certification pathways, and access to a powerful alumni network. The exclusive alumni portal ensures lifelong access to professional connections, resources, and opportunities across media and communication domains. With its stellar record, forward-thinking pedagogy, and deep industry integration, MET IMM continues to shape future-ready professionals equipped to lead in a dynamic global media environment."
+      "Established in 2005, MET Institute of Mass Media is a premier institution under the 37-year legacy of Mumbai Educational Trust, dedicated to shaping future media professionals. Guided by the 3A philosophy - Acquire, Assemble, Apply - MET blends academic excellence with industry exposure. With state-of-the-art facilities, including a 4K media studio and media-centric infrastructure, the institute offers top-ranked PG program specialised in Advertising & PR, Entertainment, Digital Marketing, and Journalism. MET IMM has been recognized with several accolades, including the DIAMOND rating by QS I-GAUGE Indian College Rating in 2025, ‘Outstanding Institute for Mass Media Management’ at the World Education Summit Awards 2019, and ranked 4th Best in Advertising & PR and 9th Best Post Graduate Media School in India by the Edutainment Awards 2017. Its strong industry partnerships and placement record with companies like Jio Creative Labs, Zee, Scarecrow, Madison, Madison World, VMLY&R and more, highlight its career-focused approach. A dedicated Career Management Centre and a thriving alumni network ensure students receive mentorship, certifications, and lifelong support in the evolving media landscape. With its stellar record, forward-thinking pedagogy, and deep industry integration, MET IMM continues to shape future-ready professionals equipped to lead in a dynamic global media environment."
   },
   {
     label: "About the Conference",
@@ -136,7 +136,7 @@ const ConferenceLandingPage = () => {
         <div className="max-w-5xl mx-auto space-y-10">
           <div className="text-center">
             <h1 className="text-3xl md:text-4xl font-bold text-red-600 mb-2">
-              International Research Conference on Mass Communication and Media Management
+              International Research Conference on <br /> Mass Communication and Media Management
             </h1>
             <h2 className="text-xl md:text-2xl font-semibold mb-1">Multidisciplinary | Hybrid Mode</h2>
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-gray-700 text-sm md:text-base">
@@ -153,9 +153,8 @@ const ConferenceLandingPage = () => {
               <button
                 key={i}
                 onClick={() => setActiveTab(i)}
-                className={`px-4 py-2 rounded-full border-2 text-sm font-medium transition ${
-                  activeTab === i ? "bg-red-600 text-white border-red-600" : "border-red-600 text-red-600 hover:bg-red-50"
-                }`}
+                className={`px-4 py-2 rounded-full border-2 text-sm font-medium transition ${activeTab === i ? "bg-red-600 text-white border-red-600" : "border-red-600 text-red-600 hover:bg-red-50"
+                  }`}
               >
                 {tab.label}
               </button>
@@ -229,7 +228,6 @@ const ConferenceLandingPage = () => {
                 <ul className="list-disc list-inside space-y-2 text-gray-700">
                   <li><strong>Convenor:</strong> Dr. Suvrashis Sarkar (Dean - MET IMM)</li>
                   <li><strong>Co-Convenor:</strong> Dr. Yogesh Dhanjani (Associate Professor – MET IMM)</li>
-                  <li><strong>Co-Convenor:</strong> Mr. Pritesh Shinde (Assistant Professor – MET IMM)</li>
                 </ul>
               </section>
             </div>
@@ -365,7 +363,7 @@ const ConferenceLandingPage = () => {
                     <ul className="list-disc list-inside space-y-2">
                       <li>022-39554272, 8208132465 (Dr. Suvrashis Sarkar)</li>
                       <li>022-39554384, 9820531669 (Dr. Yogesh Dhanjani)</li>
-                      <li>022-39554275, 96192255358 (Prof. Pritesh Shinde)</li>
+                      <li>022-39554275, 7700072548 (Ms. Priyanka Waghmare)</li>
                     </ul>
                   </div>
                 </div>
