@@ -202,7 +202,7 @@ export default function RegisterForm(props) {
           </div>
         )}
         <button type="submit" className="w-full bg-red-600 hover:bg-brand-700 text-white py-2 rounded-lg">
-          Proceed to Payment
+          {calculatedFee === '₹0' ? 'Submit' : 'Proceed to Payment'}
         </button>
       </form>
     </motion.div>

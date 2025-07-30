@@ -351,7 +351,7 @@ const ConferenceLandingPage = () => {
                   <li><strong>International Participant:</strong> USD 50 (per participant).</li>
                   <li><strong>Student Participant (up to three authors per paper):</strong> Rs. 800.00 (per student).</li>
                 </ul>
-                <p className="mt-4 text-gray-700"><strong>Mode of Payment:</strong> QR Code for fee payment is required.</p>
+                <p className="mt-4 text-gray-700"><strong>Mode of Payment:</strong> Online ( Refer the Registration & Payment Below).</p>
               </section>
 
               <section className="bg-gray-50 p-6 rounded-lg shadow-md">
