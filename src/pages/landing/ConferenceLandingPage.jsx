@@ -348,8 +348,9 @@ const ConferenceLandingPage = () => {
                   <li><strong>Academicians and Research Scholars (Participation Only):</strong> Rs. 1000.00 (per participant).</li>
                   <li><strong>Industry Professional (Paper Presentation):</strong> Rs. 2500.00 (per presenter) offline and online.</li>
                   <li><strong>Industry Professional (Participation Only):</strong> Rs. 1000.00 (per participant).</li>
-                  <li><strong>International Participant:</strong> USD 50 (per participant).</li>
-                  <li><strong>Student Participant (up to three authors per paper):</strong> Rs. 800.00 (per student).</li>
+                  <li><strong>International Participant:</strong>Rs. 4000.00 (per participant).</li>
+                  <li><strong>Student Participants for paper presentation:</strong> Rs. 800.00 (per student).</li>
+                  <li><strong>Student Only Participate:</strong> Rs. 500.00 (per student).</li>
                 </ul>
                 <p className="mt-4 text-gray-700"><strong>Mode of Payment:</strong> Online ( Refer the Registration & Payment Below).</p>
               </section>

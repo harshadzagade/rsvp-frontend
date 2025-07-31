@@ -1,0 +1,650 @@
+{
+  "options": [
+    {
+      "fee": 1500,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Academician"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Only One Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 2000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Academician"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Only One Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 3000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Academician"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 1 Co Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 4000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Academician"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 1 Co Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 4500,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Academician"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 2 Co Authors"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 6000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Academician"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 2 Co Authors"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 1000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Academician"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Participation Only"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 1000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Academician"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Participation Only"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 2500,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Corporate Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Paper Presentation"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 2500,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Corporate Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Paper Presentation"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 1000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Corporate Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Participation Only"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 2500,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Corporate Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Only One Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 2500,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Corporate Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Only One Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 5000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Corporate Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 1 Co Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 5000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Corporate Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 1 Co Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 7500,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Corporate Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 2 Co Authors"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 7500,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Corporate Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 2 Co Authors"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 800,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Student"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Only One Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 800,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Student"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Only One Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 1600,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Student"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 1 Co Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 1600,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Student"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 1 Co Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 2400,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Student"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 2 Co Authors"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 2400,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Student"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 2 Co Authors"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 500,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Student"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Participation Only"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 500,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Student"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Participation Only"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 1000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "Corporate Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Participation Only"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 4000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "International Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Only One Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 4000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "International Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Only One Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 4000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "International Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 1 Co Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 4000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "International Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 1 Co Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 4000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "International Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 2 Co Author"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 4000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "International Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Author plus 2 Co Authors"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    },
+    {
+      "fee": 4000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "International Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Participation Only"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Online"
+        }
+      ]
+    },
+    {
+      "fee": 4000,
+      "logic": "AND",
+      "currency": "INR",
+      "conditions": [
+        {
+          "field": "ParticipationCategory",
+          "value": "International Participant"
+        },
+        {
+          "field": "AuthorType",
+          "value": "Participation Only"
+        },
+        {
+          "field": "PaymentType",
+          "value": "Offline"
+        }
+      ]
+    }
+  ]
+}
