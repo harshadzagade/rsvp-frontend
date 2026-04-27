@@ -84,12 +84,11 @@ const ConferenceLandingPage = () => {
       <header className="border-b border-slate-200 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-red-600">MET Events</p>
-            <h1 className="mt-2 text-lg font-semibold text-slate-900">Programme Registration</h1>
+            <h1 className="mt-2 text-lg font-semibold uppercase tracking-[0.35em] text-red-600">MET Events</h1>
           </div>
           <button
             onClick={() => document.getElementById('register-form')?.scrollIntoView({ behavior: 'smooth' })}
-            className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="rounded-2xl bg-red-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             Register Now
           </button>
@@ -97,11 +96,11 @@ const ConferenceLandingPage = () => {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-12">
-        <section className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+        <section className="">
           <div className="rounded-[32px] bg-slate-900 px-8 py-10 text-white shadow-2xl">
             <p className="text-sm font-medium uppercase tracking-[0.3em] text-slate-400">Featured Programme</p>
             <h2 className="mt-4 text-4xl font-bold leading-tight">{event.title}</h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+            <p className="mt-4  text-sm leading-7 text-slate-300">
               Register for this programme using the form below. Participants will receive a confirmation email after successful registration and payment.
             </p>
 
@@ -119,23 +118,12 @@ const ConferenceLandingPage = () => {
                 <p className="mt-2 text-lg font-semibold text-white">{inferAudience(event.formFields)}</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="flex items-center gap-2 text-slate-300"><Wallet className="h-4 w-4" /> Starting Fee</div>
+                <div className="flex items-center gap-2 text-slate-300"><Wallet className="h-4 w-4" /> Fee</div>
                 <p className="mt-2 text-lg font-semibold text-white">Rs. {Number(event.fee || 0).toLocaleString('en-IN')}</p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Registration Notes</p>
-              <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
-                <li>The participant and admin team will both receive email updates.</li>
-                <li>The certificate will use the submitted certificate name.</li>
-                <li>Fee is calculated automatically from category and participation mode.</li>
-              </ul>
-            </div>
-            <FeeTable rows={feeRows} />
-          </div>
         </section>
 
         <section id="register-form" className="mt-10 rounded-[32px] border border-slate-200 bg-white p-4 shadow-sm md:p-6">
