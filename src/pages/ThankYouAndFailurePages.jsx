@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 
 const PageShell = ({ tone, title, message, ctaLabel, ctaTo }) => (
@@ -26,7 +25,6 @@ const PageShell = ({ tone, title, message, ctaLabel, ctaTo }) => (
               <h2 className="text-xl font-semibold text-slate-900">What happens next</h2>
               <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
                 <li>Your registration details have been recorded.</li>
-                <li>An email has been sent to the participant and admin team.</li>
                 <li>The certificate will use the submitted certificate name.</li>
               </ul>
               <Link
@@ -57,7 +55,7 @@ export function ThankYouPage() {
           : "Your payment has been received successfully. We've emailed the programme details to the participant and admin team."
       }
       ctaLabel="Back to Home"
-      ctaTo="/"
+      ctaTo="/pgdm-posh-mdp-2026"
     />
   );
 }
@@ -72,7 +70,7 @@ export function PaymentFailedPage() {
       title="Payment Failed"
       message={`We could not complete the payment for this registration.${error ? ` Error: ${error}.` : ''} You can return to the registration page and try again.`}
       ctaLabel="Try Again"
-      ctaTo="/"
+      ctaTo="/pgdm-posh-mdp-2026"
     />
   );
 }
