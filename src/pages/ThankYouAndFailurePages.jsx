@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 
 const PageShell = ({ tone, title, message, ctaLabel, ctaTo }) => (
