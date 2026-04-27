@@ -1,11 +1,52 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config';
+
+const PGDM_MDP_TEMPLATE = {
+  title: 'MDP Programme - Prevention of Sexual Harassment at Workplace: Training for Corporates and Academic Institutions',
+  slug: 'pgdm-posh-mdp-2026',
+  date: '2026-05-09T09:00',
+  venue: 'MET Institute of PGDM, Bandra Reclamation, Mumbai',
+  fee: '1250',
+  formFields: [
+    { name: 'fullName', label: 'Name of the person', type: 'text', required: true },
+    { name: 'email', label: 'Email id', type: 'email', required: true },
+    { name: 'mobile', label: 'Contact number', type: 'tel', required: true },
+    { name: 'category', label: 'Category', type: 'select', required: true, options: ['Corporate', 'Academician', 'Student/Research Scholar'] },
+    { name: 'participationMode', label: 'Participation Mode', type: 'radio', required: true, options: ['Offline', 'Online'] },
+    { name: 'organisation', label: 'Organisation', type: 'text', required: true },
+    { name: 'designation', label: 'Designation', type: 'text', required: true },
+    { name: 'certificateName', label: 'Name to be printed on certificate', type: 'text', required: true },
+    { name: 'joiningReason', label: 'Why you want to join this MDP', type: 'textarea', required: true },
+  ],
+  rules: [
+    { logic: 'AND', conditions: [{ field: 'category', value: 'Corporate' }, { field: 'participationMode', value: 'Offline' }], fee: '1250', currency: 'INR' },
+    { logic: 'AND', conditions: [{ field: 'category', value: 'Corporate' }, { field: 'participationMode', value: 'Online' }], fee: '600', currency: 'INR' },
+    { logic: 'AND', conditions: [{ field: 'category', value: 'Academician' }, { field: 'participationMode', value: 'Offline' }], fee: '1000', currency: 'INR' },
+    { logic: 'AND', conditions: [{ field: 'category', value: 'Academician' }, { field: 'participationMode', value: 'Online' }], fee: '500', currency: 'INR' },
+    { logic: 'AND', conditions: [{ field: 'category', value: 'Student/Research Scholar' }, { field: 'participationMode', value: 'Offline' }], fee: '800', currency: 'INR' },
+    { logic: 'AND', conditions: [{ field: 'category', value: 'Student/Research Scholar' }, { field: 'participationMode', value: 'Online' }], fee: '500', currency: 'INR' },
+  ],
+};
+
+const emptyFieldInput = {
+  name: '',
+  label: '',
+  type: 'text',
+  required: false,
+  options: '',
+};
+
+const emptyRule = {
+  logic: 'AND',
+  conditions: [{ field: '', value: '' }],
+  fee: '',
+  currency: 'INR',
+};
 
 export default function AdminCreateEventForm() {
   const navigate = useNavigate();
   const [editingFieldIndex, setEditingFieldIndex] = useState(null);
-
-
   const [form, setForm] = useState({
     title: '',
     slug: '',
@@ -14,26 +55,29 @@ export default function AdminCreateEventForm() {
     fee: '',
     formFields: [],
   });
-
-  const [fieldInput, setFieldInput] = useState({
-    name: '',
-    label: '',
-    type: 'text',
-    required: false,
-    options: '',
-  });
-
+  const [fieldInput, setFieldInput] = useState(emptyFieldInput);
   const [rules, setRules] = useState([]);
-  const [currentRule, setCurrentRule] = useState({
-    logic: 'AND',
-    conditions: [{ field: '', value: '' }],
-    fee: '',
-    currency: 'INR',
-  });
+  const [currentRule, setCurrentRule] = useState(emptyRule);
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const loadPgdmTemplate = () => {
+    setForm({
+      title: PGDM_MDP_TEMPLATE.title,
+      slug: PGDM_MDP_TEMPLATE.slug,
+      date: PGDM_MDP_TEMPLATE.date,
+      venue: PGDM_MDP_TEMPLATE.venue,
+      fee: PGDM_MDP_TEMPLATE.fee,
+      formFields: PGDM_MDP_TEMPLATE.formFields,
+    });
+    setRules(PGDM_MDP_TEMPLATE.rules);
+    setFieldInput(emptyFieldInput);
+    setCurrentRule(emptyRule);
+    setEditingFieldIndex(null);
+    setEditingRuleIndex(null);
   };
 
   const addFormField = () => {
@@ -43,12 +87,11 @@ export default function AdminCreateEventForm() {
       ...fieldInput,
       options:
         fieldInput.type === 'radio' || fieldInput.type === 'select'
-          ? fieldInput.options.split(',').map((opt) => opt.trim())
+          ? fieldInput.options.split(',').map((opt) => opt.trim()).filter(Boolean)
           : undefined,
     };
 
     if (editingFieldIndex !== null) {
-      // Update existing field
       setForm((prev) => {
         const updatedFields = [...prev.formFields];
         updatedFields[editingFieldIndex] = newField;
@@ -56,14 +99,12 @@ export default function AdminCreateEventForm() {
       });
       setEditingFieldIndex(null);
     } else {
-      // Add new field
       setForm((prev) => ({
         ...prev,
         formFields: [...prev.formFields, newField],
       }));
     }
 
-    // ✅ Retain type, reset others
     setFieldInput((prev) => ({ ...prev, name: '', label: '', options: '', required: false }));
   };
 
@@ -90,10 +131,8 @@ export default function AdminCreateEventForm() {
   };
 
   const saveRule = () => {
-    if (
-      !currentRule.fee ||
-      currentRule.conditions.some((cond) => !cond.field || !cond.value)
-    ) return;
+    if (!currentRule.fee || currentRule.conditions.some((cond) => !cond.field || !cond.value)) return;
+
     if (editingRuleIndex !== null) {
       setRules((prev) => {
         const updatedRules = [...prev];
@@ -104,7 +143,8 @@ export default function AdminCreateEventForm() {
     } else {
       setRules((prev) => [...prev, { ...currentRule }]);
     }
-    setCurrentRule({ logic: 'AND', conditions: [{ field: '', value: '' }], fee: '', currency: 'INR' });
+
+    setCurrentRule(emptyRule);
   };
 
   const editRule = (index) => {
@@ -119,24 +159,24 @@ export default function AdminCreateEventForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const cleanedFeeOptions = rules.map(rule => ({
+    const cleanedFeeOptions = rules.map((rule) => ({
       ...rule,
-      fee: parseFloat(rule.fee), // ✅ ensure number
+      fee: parseFloat(rule.fee),
       conditions: rule.conditions,
       logic: rule.logic,
-      currency: rule.currency || 'INR'
+      currency: rule.currency || 'INR',
     }));
 
     const body = {
       ...form,
-      fee: parseFloat(form.fee), // ✅ ensure number
+      fee: parseFloat(form.fee),
       date: new Date(form.date),
       formFields: form.formFields,
-      feeOptions: cleanedFeeOptions.length ? { options: cleanedFeeOptions } : undefined
+      feeOptions: cleanedFeeOptions.length ? { options: cleanedFeeOptions } : undefined,
     };
 
     try {
-      const res = await fetch('https://events.met.edu/api/events', {
+      const res = await fetch(`${API_BASE}/events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,22 +194,16 @@ export default function AdminCreateEventForm() {
     }
   };
 
-  // Helper to get field options
   const getFieldOptions = (fieldName) => {
     const field = form.formFields.find((f) => f.name === fieldName);
     return field && (field.type === 'radio' || field.type === 'select') ? field.options || [] : [];
   };
 
-  // Render value input based on field type
   const renderValueInput = (fieldName, value, onChange) => {
     const options = getFieldOptions(fieldName);
     if (options.length > 0) {
       return (
-        <select
-          value={value}
-          onChange={onChange}
-          className="border p-1 w-full"
-        >
+        <select value={value} onChange={onChange} className="border p-1 w-full rounded-md">
           <option value="">Select Value</option>
           {options.map((opt) => (
             <option key={opt} value={opt}>
@@ -179,25 +213,43 @@ export default function AdminCreateEventForm() {
         </select>
       );
     }
+
     return (
       <input
         placeholder="Value"
         value={value}
         onChange={onChange}
-        className="border p-1 w-full"
+        className="border p-1 w-full rounded-md"
       />
     );
   };
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">Admin Create Event with Fee Rules</h2>
+      <div className="mb-6 rounded-2xl border border-slate-200 bg-gradient-to-r from-red-50 via-white to-amber-50 p-5 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">Create Event</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Load the PGDM preset to prefill the MDP programme, payment slabs, and registration fields.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={loadPgdmTemplate}
+            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
+            Load PGDM MDP Preset
+          </button>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input name="title" placeholder="Title" onChange={handleChange} className="border p-2 w-full" required />
-        <input name="slug" placeholder="Slug" onChange={handleChange} className="border p-2 w-full" required />
-        <input name="date" type="datetime-local" onChange={handleChange} className="border p-2 w-full" required />
-        <input name="venue" placeholder="Venue" onChange={handleChange} className="border p-2 w-full" required />
-        <input name="fee" type="number" placeholder="Default Fee" onChange={handleChange} className="border p-2 w-full" required />
+        <input name="title" placeholder="Title" value={form.title} onChange={handleChange} className="border p-2 w-full rounded-md" required />
+        <input name="slug" placeholder="Slug" value={form.slug} onChange={handleChange} className="border p-2 w-full rounded-md" required />
+        <input name="date" type="datetime-local" value={form.date} onChange={handleChange} className="border p-2 w-full rounded-md" required />
+        <input name="venue" placeholder="Venue" value={form.venue} onChange={handleChange} className="border p-2 w-full rounded-md" required />
+        <input name="fee" type="number" value={form.fee} placeholder="Default Fee" onChange={handleChange} className="border p-2 w-full rounded-md" required />
 
         <div className="border p-4 rounded bg-gray-50 mt-4">
           <h4 className="font-semibold mb-2">Add Form Field</h4>
@@ -224,6 +276,7 @@ export default function AdminCreateEventForm() {
             <option value="checkbox">Checkbox</option>
             <option value="radio">Radio</option>
             <option value="select">Dropdown</option>
+            <option value="textarea">Textarea</option>
           </select>
           {(fieldInput.type === 'radio' || fieldInput.type === 'select') && (
             <input
@@ -276,7 +329,7 @@ export default function AdminCreateEventForm() {
                             formFields: prev.formFields.filter((_, i) => i !== index),
                           }));
                           if (editingFieldIndex === index) {
-                            setFieldInput({ name: '', label: '', type: 'text', required: false, options: '' });
+                            setFieldInput(emptyFieldInput);
                             setEditingFieldIndex(null);
                           }
                         }}
@@ -300,7 +353,7 @@ export default function AdminCreateEventForm() {
             <select
               value={currentRule.logic}
               onChange={(e) => setCurrentRule((prev) => ({ ...prev, logic: e.target.value }))}
-              className="border p-2 w-full"
+              className="border p-2 w-full rounded-md"
             >
               <option value="AND">AND</option>
               <option value="OR">OR</option>
@@ -311,7 +364,7 @@ export default function AdminCreateEventForm() {
               <select
                 value={cond.field}
                 onChange={(e) => updateCondition(condIdx, 'field', e.target.value)}
-                className="border p-2 w-1/2"
+                className="border p-2 w-1/2 rounded-md"
               >
                 <option value="">Select Field</option>
                 {form.formFields.map((f) => (
@@ -348,12 +401,12 @@ export default function AdminCreateEventForm() {
             placeholder="Fee"
             value={currentRule.fee}
             onChange={(e) => setCurrentRule((prev) => ({ ...prev, fee: e.target.value }))}
-            className="border p-2 w-full mb-2"
+            className="border p-2 w-full mb-2 rounded-md"
           />
           <select
             value={currentRule.currency}
             onChange={(e) => setCurrentRule((prev) => ({ ...prev, currency: e.target.value }))}
-            className="border p-2 w-full mb-2"
+            className="border p-2 w-full mb-2 rounded-md"
           >
             <option value="INR">INR</option>
             <option value="USD">USD</option>
@@ -365,7 +418,7 @@ export default function AdminCreateEventForm() {
             <button
               type="button"
               onClick={() => {
-                setCurrentRule({ logic: 'AND', conditions: [{ field: '', value: '' }], fee: '', currency: 'INR' });
+                setCurrentRule(emptyRule);
                 setEditingRuleIndex(null);
               }}
               className="ml-2 bg-gray-600 text-white px-4 py-1 rounded mt-2"
@@ -386,7 +439,7 @@ export default function AdminCreateEventForm() {
                   <span>
                     {rule.conditions
                       .map((cond) => `${form.formFields.find((f) => f.name === cond.field)?.label || cond.field} = ${cond.value}`)
-                      .join(` ${rule.logic} `)} → {rule.fee} {rule.currency}
+                      .join(` ${rule.logic} `)} -> {rule.fee} {rule.currency}
                   </span>
                   <div>
                     <button

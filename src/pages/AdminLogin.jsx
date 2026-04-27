@@ -1,6 +1,7 @@
 // src/pages/AdminLogin.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config';
 
 export default function AdminLogin() {
     const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function AdminLogin() {
         setError('');
 
         try {
-            const res = await fetch('https://events.met.edu/api/admin/login', {
+            const res = await fetch(`${API_BASE}/admin/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),

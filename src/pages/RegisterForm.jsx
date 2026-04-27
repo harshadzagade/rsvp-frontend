@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { API_BASE } from '../config';
+
+const formatCurrency = (currency, amount) => {
+  if (currency === 'INR') return `Rs. ${amount}`;
+  return `${currency} ${amount}`;
+};
 
 export default function RegisterForm(props) {
   const { eventId: paramEventId } = useParams();
   const [calculatedFee, setCalculatedFee] = useState(null);
+  const [calculatedAmount, setCalculatedAmount] = useState(null);
   const navigate = useNavigate();
 
   const eventId = props?.eventId || paramEventId;
@@ -18,21 +25,21 @@ export default function RegisterForm(props) {
   useEffect(() => {
     if (!eventId) return;
 
-    fetch(`/api/events/${eventId}`)
-      .then(async res => {
+    fetch(`${API_BASE}/events/${eventId}`)
+      .then(async (res) => {
         if (!res.ok) throw new Error('Invalid response');
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         setEvent(data);
         const initialFormState = {};
-        data.formFields.forEach(f => {
+        data.formFields.forEach((f) => {
           initialFormState[f.name] = '';
         });
         setFormData(initialFormState);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Error loading event:', err.message);
         setError('The event you are looking for could not be loaded. Please check the link or try again later.');
         setLoading(false);
@@ -41,8 +48,8 @@ export default function RegisterForm(props) {
   }, [eventId]);
 
   const handleChange = (name, value) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: '' }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   useEffect(() => {
@@ -58,7 +65,7 @@ export default function RegisterForm(props) {
       const logic = rule.logic || 'AND';
       const conditions = rule.conditions || [];
 
-      const matches = conditions.map(cond => {
+      const matches = conditions.map((cond) => {
         const userValue = (formData[cond.field] || '').toString().toLowerCase();
         const ruleValue = (cond.value || '').toLowerCase();
         return userValue === ruleValue;
@@ -73,20 +80,20 @@ export default function RegisterForm(props) {
       }
     }
 
-    setCalculatedFee(`${matchedCurrency === 'INR' ? '₹' : matchedCurrency + ' '}${matchedFee}`);
+    setCalculatedAmount(matchedFee);
+    setCalculatedFee(formatCurrency(matchedCurrency, matchedFee));
   }, [formData, event]);
 
   const validate = () => {
     const newErrors = {};
 
-    event.formFields.forEach(field => {
+    event.formFields.forEach((field) => {
       const value = formData[field.name];
 
       if (field.required && !value) {
         newErrors[field.name] = `${field.label} is required`;
       }
 
-      // Additional validations
       if (field.type === 'email' && value) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) {
@@ -95,7 +102,7 @@ export default function RegisterForm(props) {
       }
 
       if (field.type === 'tel' && value) {
-        const phoneRegex = /^[6-9]\d{9}$/; // Accepts Indian mobile numbers starting with 6-9
+        const phoneRegex = /^[6-9]\d{9}$/;
         if (!phoneRegex.test(value)) {
           newErrors[field.name] = 'Please enter a valid 10-digit mobile number';
         }
@@ -106,7 +113,6 @@ export default function RegisterForm(props) {
     return Object.keys(newErrors).length === 0;
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -116,14 +122,14 @@ export default function RegisterForm(props) {
       fullName: formData.fullName || '',
       email: formData.email || '',
       mobile: formData.mobile || '',
-      formData
+      formData,
     };
 
     try {
-      const res = await fetch('/api/rsvp', {
+      const res = await fetch(`${API_BASE}/rsvp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       const result = await res.text();
@@ -149,11 +155,11 @@ export default function RegisterForm(props) {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-brand-50 text-brand-900 p-4 md:p-8 max-w-2xl mx-auto"
+      className="bg-brand-50 text-brand-900 p-4 md:p-8 max-w-2xl mx-auto rounded-3xl"
     >
       <h1 className="text-2xl font-bold mb-4">Register for {event.title}</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {event.formFields.map(field => (
+        {event.formFields.map((field) => (
           <div key={field.name}>
             <label className="block text-sm font-medium mb-1">
               {field.label}{field.required && ' *'}
@@ -166,7 +172,22 @@ export default function RegisterForm(props) {
                   required={field.required}
                   className={`w-full px-3 py-2 border rounded-md ${errors[field.name] ? 'border-red-500' : 'border-gray-300'}`}
                   value={formData[field.name]}
-                  onChange={e => handleChange(field.name, e.target.value)}
+                  onChange={(e) => handleChange(field.name, e.target.value)}
+                />
+                {errors[field.name] && (
+                  <p className="text-sm text-red-500 mt-1">{errors[field.name]}</p>
+                )}
+              </>
+            )}
+            {field.type === 'textarea' && (
+              <>
+                <textarea
+                  name={field.name}
+                  required={field.required}
+                  rows="4"
+                  className={`w-full px-3 py-2 border rounded-md ${errors[field.name] ? 'border-red-500' : 'border-gray-300'}`}
+                  value={formData[field.name]}
+                  onChange={(e) => handleChange(field.name, e.target.value)}
                 />
                 {errors[field.name] && (
                   <p className="text-sm text-red-500 mt-1">{errors[field.name]}</p>
@@ -175,7 +196,7 @@ export default function RegisterForm(props) {
             )}
             {field.type === 'radio' && (
               <div className="space-y-1">
-                {field.options.map(option => (
+                {field.options.map((option) => (
                   <label key={option} className="inline-flex items-center mr-4">
                     <input
                       type="radio"
@@ -194,6 +215,27 @@ export default function RegisterForm(props) {
                 )}
               </div>
             )}
+            {field.type === 'select' && (
+              <>
+                <select
+                  name={field.name}
+                  required={field.required}
+                  className={`w-full px-3 py-2 border rounded-md ${errors[field.name] ? 'border-red-500' : 'border-gray-300'}`}
+                  value={formData[field.name]}
+                  onChange={(e) => handleChange(field.name, e.target.value)}
+                >
+                  <option value="">Select an option</option>
+                  {field.options.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {errors[field.name] && (
+                  <p className="text-sm text-red-500 mt-1">{errors[field.name]}</p>
+                )}
+              </>
+            )}
           </div>
         ))}
         {calculatedFee && (
@@ -202,7 +244,7 @@ export default function RegisterForm(props) {
           </div>
         )}
         <button type="submit" className="w-full bg-red-600 hover:bg-brand-700 text-white py-2 rounded-lg">
-          {calculatedFee === '₹0' ? 'Submit' : 'Proceed to Payment'}
+          {calculatedAmount === 0 ? 'Submit' : 'Proceed to Payment'}
         </button>
       </form>
     </motion.div>
