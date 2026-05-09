@@ -56,7 +56,7 @@ export function ThankYouPage() {
           : "Your payment has been received successfully. We've emailed the programme details to the participant and admin team."
       }
       ctaLabel="Back to Home"
-      ctaTo="/pgdm-posh-mdp-2026"
+      ctaTo="/ics-conference-2026"
     />
   );
 }
@@ -71,7 +71,7 @@ export function PaymentFailedPage() {
       title="Payment Failed"
       message={`We could not complete the payment for this registration.${error ? ` Error: ${error}.` : ''} You can return to the registration page and try again.`}
       ctaLabel="Try Again"
-      ctaTo="/pgdm-posh-mdp-2026"
+      ctaTo="/ics-conference-2026"
     />
   );
 }

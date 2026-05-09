@@ -2,31 +2,65 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 
-const PGDM_MDP_TEMPLATE = {
-  title: 'MDP Programme - Prevention of Sexual Harassment at Workplace: Training for Corporates and Academic Institutions',
-  slug: 'pgdm-posh-mdp-2026',
-  date: '2026-05-09T09:00',
-  venue: 'MET Institute of PGDM, Bandra Reclamation, Mumbai',
-  fee: '1250',
+
+const ICS_CONFERENCE_TEMPLATE = {
+  title: 'Conference Registration Form',
+  slug: 'ics-conference-2026',
+  date: '2026-08-15T09:00',
+  venue: 'MET Institute of Computer Science',
+  // fee: '1000', 
   formFields: [
-    { name: 'fullName', label: 'Name of the person', type: 'text', required: true },
-    { name: 'email', label: 'Email id', type: 'email', required: true },
-    { name: 'mobile', label: 'Contact number', type: 'tel', required: true },
-    { name: 'category', label: 'Category', type: 'select', required: true, options: ['Corporate', 'Academician', 'Student/Research Scholar'] },
-    { name: 'participationMode', label: 'Participation Mode', type: 'radio', required: true, options: ['Offline', 'Online'] },
-    { name: 'organisation', label: 'Organisation', type: 'text', required: true },
-    { name: 'designation', label: 'Designation', type: 'text', required: true },
-    { name: 'certificateName', label: 'Name to be printed on certificate', type: 'text', required: true },
-    { name: 'joiningReason', label: 'Why you want to join this MDP', type: 'textarea', required: true },
+    { name: 'fullname', label: 'Full Name', type: 'text', required: true },
+    { name: 'email', label: 'Email Address', type: 'email', required: true },
+    { name: 'phone', label: 'Phone Number', type: 'tel', required: true },
+    { name: 'organization', label: 'Affiliation / Organization', type: 'text', required: false },
+    { name: 'country', label: 'Country', type: 'text', required: false },
+    { name: 'cmt_paper_id', label: 'CMT Paper ID', type: 'text', required: true },
+    { name: 'paper_title', label: 'Paper Title', type: 'text', required: false },
+    {
+      name: 'author_type',
+      label: 'Author Type',
+      type: 'select',
+      required: true,
+      options: ['Presenting Author', 'Co-Author', 'Participant (No Paper)']
+    },
+    {
+      name: 'certificate_category',
+      label: 'Certificate Category',
+      type: 'select',
+      required: true,
+      options: ['Main Author Certificate', 'Additional Author Certificate', 'Participant Certificate']
+    },
+    {
+      name: 'category',
+      label: 'Registration Category',
+      type: 'select',
+      required: true,
+      options: ['Industry Professional', 'Academic/Research Scholar', 'Student']
+    },
+    { name: 'accommodation', label: 'Need Accommodation', type: 'checkbox', required: false },
+    { name: 'declaration', label: 'I confirm that the information provided is correct', type: 'checkbox', required: true }
   ],
   rules: [
-    { logic: 'AND', conditions: [{ field: 'category', value: 'Corporate' }, { field: 'participationMode', value: 'Offline' }], fee: '1250', currency: 'INR' },
-    { logic: 'AND', conditions: [{ field: 'category', value: 'Corporate' }, { field: 'participationMode', value: 'Online' }], fee: '600', currency: 'INR' },
-    { logic: 'AND', conditions: [{ field: 'category', value: 'Academician' }, { field: 'participationMode', value: 'Offline' }], fee: '1000', currency: 'INR' },
-    { logic: 'AND', conditions: [{ field: 'category', value: 'Academician' }, { field: 'participationMode', value: 'Online' }], fee: '500', currency: 'INR' },
-    { logic: 'AND', conditions: [{ field: 'category', value: 'Student/Research Scholar' }, { field: 'participationMode', value: 'Offline' }], fee: '800', currency: 'INR' },
-    { logic: 'AND', conditions: [{ field: 'category', value: 'Student/Research Scholar' }, { field: 'participationMode', value: 'Online' }], fee: '500', currency: 'INR' },
-  ],
+    {
+      logic: 'AND',
+      conditions: [{ field: 'category', value: 'Industry Professional' }],
+      fee: '5000',
+      currency: 'INR'
+    },
+    {
+      logic: 'AND',
+      conditions: [{ field: 'category', value: 'Academic/Research Scholar' }],
+      fee: '3000',
+      currency: 'INR'
+    },
+    {
+      logic: 'AND',
+      conditions: [{ field: 'category', value: 'Student' }],
+      fee: '1000',
+      currency: 'INR'
+    }
+  ]
 };
 
 const emptyFieldInput = {
@@ -64,21 +98,6 @@ export default function AdminCreateEventForm() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const loadPgdmTemplate = () => {
-    setForm({
-      title: PGDM_MDP_TEMPLATE.title,
-      slug: PGDM_MDP_TEMPLATE.slug,
-      date: PGDM_MDP_TEMPLATE.date,
-      venue: PGDM_MDP_TEMPLATE.venue,
-      fee: PGDM_MDP_TEMPLATE.fee,
-      formFields: PGDM_MDP_TEMPLATE.formFields,
-    });
-    setRules(PGDM_MDP_TEMPLATE.rules);
-    setFieldInput(emptyFieldInput);
-    setCurrentRule(emptyRule);
-    setEditingFieldIndex(null);
-    setEditingRuleIndex(null);
-  };
 
   const addFormField = () => {
     if (!fieldInput.name || !fieldInput.label) return;
@@ -231,15 +250,29 @@ export default function AdminCreateEventForm() {
           <div>
             <h2 className="text-2xl font-bold text-slate-900">Create Event</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Load the PGDM preset to prefill the MDP programme, payment slabs, and registration fields.
+              Load the ICS preset to prefill the MDP programme, payment slabs, and registration fields.
             </p>
           </div>
           <button
             type="button"
-            onClick={loadPgdmTemplate}
-            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+            onClick={() => {
+              setForm({
+                title: ICS_CONFERENCE_TEMPLATE.title,
+                slug: ICS_CONFERENCE_TEMPLATE.slug,
+                date: ICS_CONFERENCE_TEMPLATE.date,
+                venue: ICS_CONFERENCE_TEMPLATE.venue,
+                fee: ICS_CONFERENCE_TEMPLATE.fee,
+                formFields: ICS_CONFERENCE_TEMPLATE.formFields,
+              });
+              setRules(ICS_CONFERENCE_TEMPLATE.rules);
+              setFieldInput(emptyFieldInput);
+              setCurrentRule(emptyRule);
+              setEditingFieldIndex(null);
+              setEditingRuleIndex(null);
+            }}
+            className="ml-2 rounded-xl bg-blue-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
           >
-            Load PGDM MDP Preset
+            Load ICS Conference Preset
           </button>
         </div>
       </div>
@@ -439,7 +472,7 @@ export default function AdminCreateEventForm() {
                   <span>
                     {rule.conditions
                       .map((cond) => `${form.formFields.find((f) => f.name === cond.field)?.label || cond.field} = ${cond.value}`)
-                      .join(` ${rule.logic} `)} -> {rule.fee} {rule.currency}
+                      .join(` ${rule.logic} `)} -&gt; {rule.fee} {rule.currency}
                   </span>
                   <div>
                     <button

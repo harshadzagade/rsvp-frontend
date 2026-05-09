@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 const inferInstitute = (eventTitle = '', slug = '', venue = '') => {
   const source = `${eventTitle} ${slug} ${venue}`.toLowerCase();
   if (source.includes('pgdm')) return 'PGDM';
+  if (source.includes('ics')) return 'ICS';
   if (source.includes('imm') || source.includes('mass media')) return 'IMM';
   return 'Other';
 };
@@ -179,6 +180,7 @@ export default function AdminDashboard() {
   }, [selectedRsvp]);
 
   const summary = useMemo(() => {
+    const icsEvents = events.filter((event) => inferInstitute(event.title, event.slug, event.venue) === 'ICS').length;
     const pgdmEvents = events.filter((event) => inferInstitute(event.title, event.slug, event.venue) === 'PGDM').length;
     const immEvents = events.filter((event) => inferInstitute(event.title, event.slug, event.venue) === 'IMM').length;
     const successfulPayments = rsvps.filter((rsvp) => rsvp.status === 'success').length;
@@ -186,6 +188,7 @@ export default function AdminDashboard() {
     return {
       totalEvents: events.length,
       totalRsvps: rsvps.length,
+      icsEvents,
       pgdmEvents,
       immEvents,
       successfulPayments,
@@ -255,7 +258,7 @@ export default function AdminDashboard() {
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">MET Admin</p>
             <h1 className="mt-2 text-2xl font-bold">Payments and Events</h1>
-            <p className="mt-2 text-sm text-slate-300">Manage IMM and PGDM events, review registrations, and inspect payment details without the screen stretching sideways.</p>
+            <p className="mt-2 text-sm text-slate-300">Manage IMM and PGDM, ICS events, review registrations, and inspect payment details without the screen stretching sideways.</p>
           </div>
 
           <div className="mt-8 space-y-2">
@@ -337,6 +340,7 @@ export default function AdminDashboard() {
                 className="rounded-2xl border border-slate-200 px-4 py-3"
               >
                 <option value="">All institutes</option>
+                <option value="ICS">ICS</option>
                 <option value="IMM">IMM</option>
                 <option value="PGDM">PGDM</option>
                 <option value="Other">Other</option>
@@ -363,9 +367,10 @@ export default function AdminDashboard() {
               <p className="text-sm text-slate-500">Total RSVPs</p>
               <p className="mt-2 text-3xl font-bold">{summary.totalRsvps}</p>
             </div>
+
             <div className="rounded-3xl bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">PGDM Events</p>
-              <p className="mt-2 text-3xl font-bold text-red-600">{summary.pgdmEvents}</p>
+              <p className="text-sm text-slate-500">ICS Events</p>
+              <p className="mt-2 text-3xl font-bold text-blue-600">{summary.icsEvents}</p>
             </div>
             <div className="rounded-3xl bg-white p-5 shadow-sm">
               <p className="text-sm text-slate-500">IMM Events</p>
