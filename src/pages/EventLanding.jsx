@@ -5,7 +5,7 @@ const EventLanding = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate('/imm_mdp');
+    navigate('/ics-conference-2026');
   }, [navigate]);
 
   return null;
