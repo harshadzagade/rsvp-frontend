@@ -113,15 +113,16 @@ const ConferenceLandingPage = () => {
                 <div className="flex items-center gap-2 text-slate-300"><MapPin className="h-4 w-4" /> Venue</div>
                 <p className="mt-2 text-lg font-semibold text-white">{event.venue}</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="flex items-center gap-2 text-slate-300"><Users className="h-4 w-4" /> Audience</div>
-                <p className="mt-2 text-lg font-semibold text-white">{inferAudience(event.formFields)}</p>
-              </div>
+              
               {/* <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div className="flex items-center gap-2 text-slate-300"><Wallet className="h-4 w-4" /> Fee</div>
                 <p className="mt-2 text-lg font-semibold text-white">Rs. {Number(event.fee || 0).toLocaleString('en-IN')}</p>
               </div> */}
             </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 mt-5">
+                <div className="flex items-center gap-2 text-slate-300"><Users className="h-4 w-4" /> Audience</div>
+                <p className="mt-2 text-lg font-semibold text-white">{inferAudience(event.formFields)}</p>
+              </div>
           </div>
 
         </section>

@@ -59,11 +59,11 @@ export default function RegisterForm(props) {
   useEffect(() => {
     if (!event) return;
 
-    const baseFee = event.fee;
     const rules = event.feeOptions?.options || [];
 
-    let matchedFee = baseFee;
+    let matchedFee = null;
     let matchedCurrency = 'INR';
+    let foundMatch = false;
 
     for (const rule of rules) {
       const logic = rule.logic || 'AND';
@@ -75,17 +75,26 @@ export default function RegisterForm(props) {
         return userValue === ruleValue;
       });
 
-      const isMatch = logic === 'AND' ? matches.every(Boolean) : matches.some(Boolean);
+      const isMatch =
+        logic === 'AND'
+          ? matches.every(Boolean)
+          : matches.some(Boolean);
 
       if (isMatch) {
         matchedFee = rule.fee;
         matchedCurrency = rule.currency || 'INR';
+        foundMatch = true;
         break;
       }
     }
 
-    setCalculatedAmount(matchedFee);
-    setCalculatedFee(formatCurrency(matchedCurrency, matchedFee));
+    if (foundMatch) {
+      setCalculatedAmount(matchedFee);
+      setCalculatedFee(formatCurrency(matchedCurrency, matchedFee));
+    } else {
+      setCalculatedAmount(null);
+      setCalculatedFee(null);
+    }
   }, [formData, event]);
 
   const validate = () => {
@@ -246,6 +255,26 @@ export default function RegisterForm(props) {
                   <p className="text-sm text-red-500 mt-1">{errors[field.name]}</p>
                 )}
               </>
+            )}
+
+            {/* Checkbox handling */}
+            {field.type === 'checkbox' && (
+              <div className="space-y-1">
+                <label className="inline-flex items-center mr-4">
+                  <input
+                    type="checkbox"
+                    name={field.name}
+                    checked={!!formData[field.name]} // Boolean check
+                    onChange={(e) => handleChange(field.name, e.target.checked)}
+                    required={field.required}
+                    className="mr-2 h-4 w-4"
+                  />
+                  <span className="text-sm">{field.label_subtext || 'Accept terms'}</span>
+                </label>
+                {errors[field.name] && (
+                  <p className="text-sm text-red-500 mt-1">{errors[field.name]}</p>
+                )}
+              </div>
             )}
           </div>
         ))}
