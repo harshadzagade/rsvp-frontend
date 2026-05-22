@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { API_BASE } from '../config';
 
@@ -21,6 +21,10 @@ export default function RegisterForm(props) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const location = useLocation();
+  const isWidget = location.pathname.includes('/widget/register');
+
 
   useEffect(() => {
     if (!eventId) return;
@@ -155,9 +159,16 @@ export default function RegisterForm(props) {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-brand-50 text-brand-900 p-4 md:p-8 max-w-2xl mx-auto rounded-3xl"
+      className={`text-brand-900 mx-auto rounded-3xl ${isWidget
+          ? 'bg-white p-4 max-w-md shadow-none'
+          : 'bg-brand-50 p-4 md:p-8 max-w-2xl'
+        }`}
     >
-      <h1 className="text-2xl font-bold mb-4">Register for {event.title}</h1>
+      {!isWidget && (
+        <h1 className="text-2xl font-bold mb-4">
+          Register for {event.title}
+        </h1>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         {event.formFields.map((field) => (
           <div key={field.name}>
