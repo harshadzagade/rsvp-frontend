@@ -128,9 +128,9 @@ export default function RegisterForm(props) {
 
     const payload = {
       eventId: parseInt(eventId),
-      fullName: formData.fullName || '',
-      email: formData.email || '',
-      mobile: formData.mobile || '',
+      fullName: formData.fullName || formData.FullName || formData.Name || formData.name || '',
+      email: formData.email || formData.Email || '',
+      mobile: formData.mobile || formData.Mobile || formData['WhatsApp Number'] || formData['Contact Number'] || formData['Contact number'] || '',
       formData,
     };
 
