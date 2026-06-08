@@ -8,6 +8,7 @@ const inferInstitute = (eventTitle = '', slug = '', venue = '') => {
   const source = `${eventTitle} ${slug} ${venue}`.toLowerCase();
   if (source.includes('pgdm')) return 'PGDM';
   if (source.includes('ics')) return 'ICS';
+  if (source.includes('iop') || source.includes('pharmacy')) return 'IOP';
   if (source.includes('imm') || source.includes('mass media')) return 'IMM';
   return 'Other';
 };
@@ -51,6 +52,57 @@ const getRsvpAmount = (rsvp) => {
   return amount;
 };
 
+const extractField = (data, searchKeys) => {
+  if (typeof data !== 'object' || data === null) return null;
+  const entries = Object.entries(data);
+  const normalizedTargets = searchKeys.map(k => k.toLowerCase().replace(/[^a-z0-9]/g, ''));
+  for (const [key, value] of entries) {
+    const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (normalizedTargets.includes(normalizedKey) && value) {
+      return value;
+    }
+  }
+  for (const [key, value] of entries) {
+    const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const target of normalizedTargets) {
+      if ((normalizedKey.includes(target) || target.includes(normalizedKey)) && value) {
+        return value;
+      }
+    }
+  }
+  return null;
+};
+
+const getRsvpName = (r) => {
+  if (!r) return 'No Name';
+  if (r.fullName) return r.fullName;
+  const data = r.formData || {};
+  const value = extractField(data, ['fullname', 'name', 'nameasrequiredonthecertificate']);
+  if (value) return value;
+  
+  const first = extractField(data, ['firstname', 'first']);
+  const last = extractField(data, ['lastname', 'last']);
+  if (first || last) {
+    return `${first || ''} ${last || ''}`.trim();
+  }
+  return 'No Name';
+};
+
+const getRsvpEmail = (r) => {
+  if (!r) return '-';
+  if (r.email) return r.email;
+  const data = r.formData || {};
+  return extractField(data, ['email', 'emailaddress']) || '-';
+};
+
+const getRsvpMobile = (r) => {
+  if (!r) return '-';
+  if (r.mobile) return r.mobile;
+  const data = r.formData || {};
+  return extractField(data, ['mobile', 'whatsappnumber', 'whatsapp', 'contactnumber', 'contact', 'phone']) || '-';
+};
+
+
 const filterRsvps = (rsvps, filters) => {
   return rsvps.filter((rsvp) => {
     const title = rsvp.event?.title || '';
@@ -58,13 +110,18 @@ const filterRsvps = (rsvps, filters) => {
     const year = rsvp.event?.date ? new Date(rsvp.event.date).getFullYear().toString() : '';
     const institute = inferInstitute(title, rsvp.event?.slug || '', venue);
     const status = (rsvp.status || '').toLowerCase();
-    const searchText = `${title} ${venue} ${rsvp.fullName || ''} ${rsvp.email || ''} ${rsvp.mobile || ''} ${rsvp.formData?.category || ''} ${rsvp.formData?.organisation || ''}`.toLowerCase();
+    
+    const name = getRsvpName(rsvp);
+    const email = getRsvpEmail(rsvp);
+    const mobile = getRsvpMobile(rsvp);
+    const searchText = `${title} ${venue} ${name} ${email} ${mobile} ${rsvp.formData?.category || ''} ${rsvp.formData?.organisation || ''}`.toLowerCase();
 
     return (
       (!filters.search || searchText.includes(filters.search.toLowerCase())) &&
       (!filters.year || year === filters.year) &&
       (!filters.institute || institute === filters.institute) &&
-      (!filters.status || status === filters.status.toLowerCase())
+      (!filters.status || status === filters.status.toLowerCase()) &&
+      (!filters.eventId || rsvp.eventId.toString() === filters.eventId)
     );
   });
 };
@@ -100,6 +157,7 @@ export default function AdminDashboard() {
     search: '',
     year: '',
     institute: '',
+    eventId: '',
     status: '',
   });
 
@@ -166,31 +224,90 @@ export default function AdminDashboard() {
   );
 
   const selectedRsvpFields = useMemo(() => {
-    if (!selectedRsvp?.formData) return [];
+    if (!selectedRsvp) return [];
+    const formData = selectedRsvp.formData || {};
+    const formFields = selectedRsvp.event?.formFields || [];
+    
+    const fieldsToShow = [];
+    const displayedKeys = new Set();
 
-    const hiddenKeys = new Set(['fullName', 'email', 'mobile']);
+    // 1. Map fields according to the event's formFields configuration in order
+    if (Array.isArray(formFields)) {
+      formFields.forEach((field) => {
+        const key = field.name;
+        // Find matching value from formData with case fallbacks
+        let value = formData[key];
+        if (value === undefined || value === null || value === '') {
+          const lowerKey = key.toLowerCase();
+          const upperKey = key.toUpperCase();
+          const capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1);
+          value = formData[lowerKey] !== undefined && formData[lowerKey] !== null ? formData[lowerKey] :
+                  formData[upperKey] !== undefined && formData[upperKey] !== null ? formData[upperKey] :
+                  formData[capitalizedKey] !== undefined && formData[capitalizedKey] !== null ? formData[capitalizedKey] : 
+                  formData[field.label] !== undefined && formData[field.label] !== null ? formData[field.label] : '';
+        }
+        
+        if (value !== undefined && value !== null && value !== '') {
+          fieldsToShow.push({
+            key,
+            label: field.label || normalizeLabel(key),
+            value: value,
+          });
+        }
+        displayedKeys.add(key.toLowerCase());
+        if (field.label) {
+          displayedKeys.add(field.label.toLowerCase());
+        }
+      });
+    }
 
-    return Object.entries(selectedRsvp.formData)
-      .filter(([key, value]) => !hiddenKeys.has(key) && value !== '' && value !== null && value !== undefined)
-      .map(([key, value]) => ({
+    // 2. Add any remaining keys in formData that are not system-related or already displayed
+    Object.entries(formData).forEach(([key, value]) => {
+      const lowerKey = key.toLowerCase();
+      if (
+        displayedKeys.has(lowerKey) ||
+        lowerKey === 'txnid' ||
+        value === '' ||
+        value === null ||
+        value === undefined
+      ) {
+        return;
+      }
+      
+      fieldsToShow.push({
         key,
         label: normalizeLabel(key),
         value,
-      }));
+      });
+    });
+
+    return fieldsToShow;
   }, [selectedRsvp]);
 
   const summary = useMemo(() => {
     const icsEvents = events.filter((event) => inferInstitute(event.title, event.slug, event.venue) === 'ICS').length;
+    const iopEvents = events.filter((event) => inferInstitute(event.title, event.slug, event.venue) === 'IOP').length;
     const pgdmEvents = events.filter((event) => inferInstitute(event.title, event.slug, event.venue) === 'PGDM').length;
     const immEvents = events.filter((event) => inferInstitute(event.title, event.slug, event.venue) === 'IMM').length;
+
+    const icsRsvps = rsvps.filter((rsvp) => inferInstitute(rsvp.event?.title, rsvp.event?.slug || '', rsvp.event?.venue) === 'ICS').length;
+    const iopRsvps = rsvps.filter((rsvp) => inferInstitute(rsvp.event?.title, rsvp.event?.slug || '', rsvp.event?.venue) === 'IOP').length;
+    const pgdmRsvps = rsvps.filter((rsvp) => inferInstitute(rsvp.event?.title, rsvp.event?.slug || '', rsvp.event?.venue) === 'PGDM').length;
+    const immRsvps = rsvps.filter((rsvp) => inferInstitute(rsvp.event?.title, rsvp.event?.slug || '', rsvp.event?.venue) === 'IMM').length;
+
     const successfulPayments = rsvps.filter((rsvp) => rsvp.status === 'success').length;
 
     return {
       totalEvents: events.length,
       totalRsvps: rsvps.length,
       icsEvents,
+      iopEvents,
       pgdmEvents,
       immEvents,
+      icsRsvps,
+      iopRsvps,
+      pgdmRsvps,
+      immRsvps,
       successfulPayments,
     };
   }, [events, rsvps]);
@@ -316,18 +433,18 @@ export default function AdminDashboard() {
               </button>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               <input
                 type="text"
-                placeholder="Search by event, venue, name, email, category..."
+                placeholder="Search name, email, category..."
                 value={filters.search}
                 onChange={(e) => updateFilter('search', e.target.value)}
-                className="rounded-2xl border border-slate-200 px-4 py-3"
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium"
               />
               <select
                 value={filters.year}
                 onChange={(e) => updateFilter('year', e.target.value)}
-                className="rounded-2xl border border-slate-200 px-4 py-3"
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium"
               >
                 <option value="">All years</option>
                 {yearOptions.map((year) => (
@@ -337,18 +454,31 @@ export default function AdminDashboard() {
               <select
                 value={filters.institute}
                 onChange={(e) => updateFilter('institute', e.target.value)}
-                className="rounded-2xl border border-slate-200 px-4 py-3"
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium"
               >
                 <option value="">All institutes</option>
                 <option value="ICS">ICS</option>
+                <option value="IOP">IOP</option>
                 <option value="IMM">IMM</option>
                 <option value="PGDM">PGDM</option>
                 <option value="Other">Other</option>
               </select>
               <select
+                value={filters.eventId}
+                onChange={(e) => updateFilter('eventId', e.target.value)}
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium truncate max-w-full"
+              >
+                <option value="">All events</option>
+                {events.map((event) => (
+                  <option key={event.id} value={event.id.toString()}>
+                    {event.title}
+                  </option>
+                ))}
+              </select>
+              <select
                 value={filters.status}
                 onChange={(e) => updateFilter('status', e.target.value)}
-                className="rounded-2xl border border-slate-200 px-4 py-3"
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium"
               >
                 <option value="">All statuses</option>
                 <option value="success">Success</option>
@@ -358,7 +488,7 @@ export default function AdminDashboard() {
             </div>
           </section>
 
-          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
             <div className="rounded-3xl bg-white p-5 shadow-sm">
               <p className="text-sm text-slate-500">Total Events</p>
               <p className="mt-2 text-3xl font-bold">{summary.totalEvents}</p>
@@ -369,12 +499,19 @@ export default function AdminDashboard() {
             </div>
 
             <div className="rounded-3xl bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">ICS Events</p>
-              <p className="mt-2 text-3xl font-bold text-blue-600">{summary.icsEvents}</p>
+              <p className="text-sm text-slate-500">ICS RSVPs</p>
+              <p className="mt-2 text-3xl font-bold text-blue-600">{summary.icsRsvps}</p>
+              <p className="text-xs text-slate-400 mt-1">{summary.icsEvents} events</p>
             </div>
             <div className="rounded-3xl bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">IMM Events</p>
-              <p className="mt-2 text-3xl font-bold text-amber-600">{summary.immEvents}</p>
+              <p className="text-sm text-slate-500">IOP RSVPs</p>
+              <p className="mt-2 text-3xl font-bold text-emerald-600">{summary.iopRsvps}</p>
+              <p className="text-xs text-slate-400 mt-1">{summary.iopEvents} events</p>
+            </div>
+            <div className="rounded-3xl bg-white p-5 shadow-sm">
+              <p className="text-sm text-slate-500">IMM RSVPs</p>
+              <p className="mt-2 text-3xl font-bold text-amber-600">{summary.immRsvps}</p>
+              <p className="text-xs text-slate-400 mt-1">{summary.immEvents} events</p>
             </div>
             <div className="rounded-3xl bg-white p-5 shadow-sm">
               <p className="text-sm text-slate-500">Successful Payments</p>
@@ -387,7 +524,7 @@ export default function AdminDashboard() {
           ) : (
             <>
               {(activeView === 'overview' || activeView === 'rsvps') && (
-                <section className="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.95fr)]">
+                <section className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.95fr)]">
                   <div className="min-w-0 rounded-3xl bg-white p-5 shadow-sm">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                       <div>
@@ -416,8 +553,8 @@ export default function AdminDashboard() {
                                     {rsvp.status}
                                   </span>
                                 </div>
-                                <h4 className="mt-3 text-lg font-semibold">{rsvp.fullName}</h4>
-                                <p className={`mt-1 truncate text-sm ${isActive ? 'text-slate-200' : 'text-slate-500'}`}>{rsvp.email}</p>
+                                <h4 className="mt-3 text-lg font-semibold">{getRsvpName(rsvp)}</h4>
+                                <p className={`mt-1 truncate text-sm ${isActive ? 'text-slate-200' : 'text-slate-500'}`}>{getRsvpEmail(rsvp)}</p>
                                 <p className={`mt-1 text-sm ${isActive ? 'text-slate-300' : 'text-slate-600'}`}>{rsvp.event?.title}</p>
                               </div>
                               <div className={`grid grid-cols-2 gap-3 text-sm sm:min-w-[260px] ${isActive ? 'text-slate-200' : 'text-slate-600'}`}>
@@ -449,64 +586,70 @@ export default function AdminDashboard() {
                     )}
                   </div>
 
-                  <div className="rounded-3xl bg-white p-5 shadow-sm 2xl:sticky 2xl:top-6 2xl:self-start">
-                    <h3 className="text-2xl font-bold">Registration Details</h3>
+                  <div className="rounded-3xl bg-white p-5 shadow-sm xl:sticky xl:top-6 xl:self-start xl:max-h-[calc(100vh-3rem)] xl:flex xl:flex-col">
+                    <h3 className="text-2xl font-bold flex-shrink-0">Registration Details</h3>
                     {!selectedRsvp ? (
-                      <p className="mt-4 text-sm text-slate-500">Select a registration to view payment details and submitted form fields.</p>
-                    ) : (
-                      <div className="mt-5 space-y-6">
-                        <div className="rounded-2xl bg-slate-900 p-5 text-white">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold">
-                              {inferInstitute(selectedRsvp.event?.title, selectedRsvp.event?.slug, selectedRsvp.event?.venue)}
-                            </span>
-                            <span className="rounded-full bg-emerald-400/20 px-2.5 py-1 text-xs font-semibold text-emerald-100">
-                              {selectedRsvp.status}
-                            </span>
-                          </div>
-                          <h4 className="mt-4 text-2xl font-bold">{selectedRsvp.fullName}</h4>
-                          <p className="mt-1 text-sm text-slate-300">{selectedRsvp.email}</p>
-                          <p className="mt-1 text-sm text-slate-300">{selectedRsvp.mobile}</p>
-                        </div>
+                      <p className="mt-4 text-sm text-slate-500 flex-shrink-0">Select a registration to view payment details and submitted form fields.</p>
+                    ) : (() => {
+                      const displayName = getRsvpName(selectedRsvp);
+                      const displayEmail = getRsvpEmail(selectedRsvp);
+                      const displayMobile = getRsvpMobile(selectedRsvp);
 
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                          <div className="rounded-2xl border border-slate-200 p-4">
-                            <p className="text-xs uppercase tracking-wide text-slate-400">Event</p>
-                            <p className="mt-2 font-semibold text-slate-900">{selectedRsvp.event?.title}</p>
+                      return (
+                        <div className="mt-5 overflow-y-auto pr-2 space-y-6 flex-1 min-h-0 custom-scrollbar">
+                          <div className="rounded-2xl bg-slate-900 p-5 text-white flex-shrink-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold">
+                                {inferInstitute(selectedRsvp.event?.title, selectedRsvp.event?.slug, selectedRsvp.event?.venue)}
+                              </span>
+                              <span className="rounded-full bg-emerald-400/20 px-2.5 py-1 text-xs font-semibold text-emerald-100">
+                                {selectedRsvp.status}
+                              </span>
+                            </div>
+                            <h4 className="mt-4 text-2xl font-bold">{displayName}</h4>
+                            <p className="mt-1 text-sm text-slate-300">{displayEmail}</p>
+                            <p className="mt-1 text-sm text-slate-300">{displayMobile}</p>
                           </div>
-                          <div className="rounded-2xl border border-slate-200 p-4">
-                            <p className="text-xs uppercase tracking-wide text-slate-400">Txn ID</p>
-                            <p className="mt-2 font-semibold text-slate-900 break-all">{selectedRsvp.txnid}</p>
-                          </div>
-                          <div className="rounded-2xl border border-slate-200 p-4">
-                            <p className="text-xs uppercase tracking-wide text-slate-400">Payment Amount</p>
-                            <p className="mt-2 font-semibold text-slate-900">{formatMoney(getRsvpAmount(selectedRsvp))}</p>
-                          </div>
-                          <div className="rounded-2xl border border-slate-200 p-4">
-                            <p className="text-xs uppercase tracking-wide text-slate-400">Registered At</p>
-                            <p className="mt-2 font-semibold text-slate-900">{formatDateTime(selectedRsvp.createdAt)}</p>
-                          </div>
-                        </div>
 
-                        <div>
-                          <h5 className="text-lg font-semibold text-slate-900">Submitted Form Fields</h5>
-                          <div className="mt-3 grid grid-cols-1 gap-3">
-                            {selectedRsvpFields.length === 0 ? (
-                              <div className="rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">
-                                No additional form fields were submitted beyond the core contact details.
-                              </div>
-                            ) : (
-                              selectedRsvpFields.map((field) => (
-                                <div key={field.key} className="rounded-2xl border border-slate-200 p-4">
-                                  <p className="text-xs uppercase tracking-wide text-slate-400">{field.label}</p>
-                                  <p className="mt-2 whitespace-pre-wrap break-words text-sm font-medium text-slate-900">{String(field.value)}</p>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="rounded-2xl border border-slate-200 p-4">
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Event</p>
+                              <p className="mt-2 font-semibold text-slate-900">{selectedRsvp.event?.title}</p>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 p-4">
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Txn ID</p>
+                              <p className="mt-2 font-semibold text-slate-900 break-all">{selectedRsvp.txnid}</p>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 p-4">
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Payment Amount</p>
+                              <p className="mt-2 font-semibold text-slate-900">{formatMoney(getRsvpAmount(selectedRsvp))}</p>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 p-4">
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Registered At</p>
+                              <p className="mt-2 font-semibold text-slate-900">{formatDateTime(selectedRsvp.createdAt)}</p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h5 className="text-lg font-semibold text-slate-900">Submitted Form Fields</h5>
+                            <div className="mt-3 grid grid-cols-1 gap-3">
+                              {selectedRsvpFields.length === 0 ? (
+                                <div className="rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">
+                                  No additional form fields were submitted beyond the core contact details.
                                 </div>
-                              ))
-                            )}
+                              ) : (
+                                selectedRsvpFields.map((field) => (
+                                  <div key={field.key} className="rounded-2xl border border-slate-200 p-4">
+                                    <p className="text-xs uppercase tracking-wide text-slate-400">{field.label}</p>
+                                    <p className="mt-2 whitespace-pre-wrap break-words text-sm font-medium text-slate-900">{String(field.value)}</p>
+                                  </div>
+                                ))
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 </section>
               )}

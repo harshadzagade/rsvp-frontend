@@ -4,8 +4,15 @@ import { CalendarDays, MapPin, Wallet, Users } from 'lucide-react';
 import RegisterForm from '../RegisterForm';
 import { API_BASE } from '../../config';
 
-const formatDate = (value) => {
+const formatDate = (event) => {
+  const value = event?.date;
   if (!value) return 'Date to be announced';
+  const slug = String(event?.slug || '').toLowerCase();
+
+  if (slug === 'iop-fdp' || slug.includes('iop')) {
+    return '6th - 10th July 2026';
+  }
+
   return new Date(value).toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'long',
@@ -107,7 +114,7 @@ const ConferenceLandingPage = () => {
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div className="flex items-center gap-2 text-slate-300"><CalendarDays className="h-4 w-4" /> Date</div>
-                <p className="mt-2 text-lg font-semibold text-white">{formatDate(event.date)}</p>
+                <p className="mt-2 text-lg font-semibold text-white">{formatDate(event)}</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div className="flex items-center gap-2 text-slate-300"><MapPin className="h-4 w-4" /> Venue</div>
