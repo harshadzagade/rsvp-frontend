@@ -9,8 +9,11 @@ const formatDate = (event) => {
   if (!value) return 'Date to be announced';
   const slug = String(event?.slug || '').toLowerCase();
 
-  if (slug === 'iop-fdp' || slug.includes('iop')) {
+  if (slug === 'iop-fdp') {
     return '6th - 10th July 2026';
+  }
+  if (slug === 'iop-fdp-python') {
+    return '17th and 18th July 2026';
   }
 
   return new Date(value).toLocaleDateString('en-IN', {
