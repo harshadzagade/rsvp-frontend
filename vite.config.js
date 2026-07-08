@@ -7,6 +7,11 @@ export default defineConfig({
     allowedHosts: ['events.met.edu'], // ✅ Add this line
     host: true,    
     port: 5173,
+    hmr: {
+      host: 'events.met.edu',
+      protocol: 'wss',
+      clientPort: 443,
+    },
     proxy: {
       '/api': {
         target: 'https://events.met.edu',
