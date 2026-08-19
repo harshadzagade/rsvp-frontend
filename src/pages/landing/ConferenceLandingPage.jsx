@@ -15,6 +15,9 @@ const formatDate = (event) => {
   if (slug === 'iop-fdp-python') {
     return '17th and 18th July 2026';
   }
+  if (slug === 'iop-cosmonext') {
+    return '3rd - 4th September 2026';
+  }
 
   return new Date(value).toLocaleDateString('en-IN', {
     day: 'numeric',

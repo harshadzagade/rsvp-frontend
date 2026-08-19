@@ -44,7 +44,9 @@ const PageShell = ({ tone, title, message, ctaLabel, ctaTo }) => (
 
 export function ThankYouPage() {
   const location = useLocation();
-  const isFree = new URLSearchParams(location.search).get('free') === 'true';
+  const queryParams = new URLSearchParams(location.search);
+  const isFree = queryParams.get('free') === 'true';
+  const slug = queryParams.get('slug') || 'ics-conference-2026';
 
   return (
     <PageShell
@@ -56,14 +58,16 @@ export function ThankYouPage() {
           : "Your payment has been received successfully. We've emailed the programme details to the participant and admin team."
       }
       ctaLabel="Back to Home"
-      ctaTo="/ics-conference-2026"
+      ctaTo={`/${slug}`}
     />
   );
 }
 
 export function PaymentFailedPage() {
   const location = useLocation();
-  const error = new URLSearchParams(location.search).get('error') || '';
+  const queryParams = new URLSearchParams(location.search);
+  const error = queryParams.get('error') || '';
+  const slug = queryParams.get('slug') || 'ics-conference-2026';
 
   return (
     <PageShell
@@ -71,7 +75,7 @@ export function PaymentFailedPage() {
       title="Payment Failed"
       message={`We could not complete the payment for this registration.${error ? ` Error: ${error}.` : ''} You can return to the registration page and try again.`}
       ctaLabel="Try Again"
-      ctaTo="/ics-conference-2026"
+      ctaTo={`/${slug}`}
     />
   );
 }
