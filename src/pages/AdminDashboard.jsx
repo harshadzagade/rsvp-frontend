@@ -583,7 +583,7 @@ export default function AdminDashboard() {
 
   // Save Institute Settings
   const handleSaveSetting = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const token = localStorage.getItem('admin_token');
     const current = instituteSettings.find(s => s.instituteCode === activeSettingCode) || {};
 
@@ -596,14 +596,37 @@ export default function AdminDashboard() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      const updated = res.data.setting || current;
       setInstituteSettings(prev =>
-        prev.map(s => s.instituteCode === activeSettingCode ? res.data.setting : s)
+        prev.map(s => s.instituteCode === activeSettingCode ? updated : s)
       );
       setSettingSuccess(`Configuration for ${activeSettingCode} saved successfully!`);
       setTimeout(() => setSettingSuccess(''), 4000);
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Settings Saved Successfully!',
+        html: `
+          <div style="text-align: left; font-size: 13px; line-height: 1.6; margin-top: 8px;">
+            <p><strong>🏛️ Institute:</strong> ${activeSettingCode} (${updated.instituteName || activeSettingCode})</p>
+            <p><strong>📧 CC / Alert Emails:</strong> <br/><span style="display:inline-block; margin-top: 4px; padding: 4px 8px; background: #fee2e2; color: #991b1b; font-family: monospace; border-radius: 6px; border: 1px solid #fecaca; word-break: break-all;">${updated.adminEmails || 'None configured'}</span></p>
+            <p style="font-size: 11px; color: #64748b; margin-top: 8px;">All changes are saved in the database. Anyone registered will now trigger acknowledgment copies to these CC emails.</p>
+          </div>
+        `,
+        confirmButtonColor: '#C8282B',
+        confirmButtonText: 'Great, Understood!',
+        timer: 4500,
+        timerProgressBar: true,
+      });
     } catch (err) {
       console.error('Failed to save settings:', err);
-      alert('Failed to save institute configuration.');
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to save institute configuration.';
+      await Swal.fire({
+        icon: 'error',
+        title: 'Failed to Save Settings',
+        text: errorMsg,
+        confirmButtonColor: '#C8282B',
+      });
     } finally {
       setSavingSetting(false);
     }
@@ -1505,6 +1528,26 @@ export default function AdminDashboard() {
                           </p>
                         </div>
 
+                        {/* CC Recipients / Admin Alert Emails */}
+                        <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                              <Mail className="w-4 h-4 text-red-600" /> CC Recipients / Admin Alert Emails
+                            </label>
+                            <span className="text-[11px] text-slate-400">Comma / Semicolon separated</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={activeSettingObj.adminEmails || ''}
+                            onChange={(e) => updateActiveSettingField('adminEmails', e.target.value)}
+                            placeholder="e.g. mdp_imm@met.edu, conference_imm@met.edu"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-xs font-semibold focus:ring-2 focus:ring-red-500"
+                          />
+                          <p className="text-[11px] text-slate-500">
+                            💡 Every email acknowledgment and registration alert for {activeSettingCode} will be automatically CC'd to these addresses.
+                          </p>
+                        </div>
+
                         {/* Subject Line */}
                         <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-2">
                           <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -1600,6 +1643,19 @@ export default function AdminDashboard() {
                             placeholder={`Warm regards,\n${activeSettingObj.instituteName || activeSettingCode}\nMumbai Educational Trust (MET)\nBandra West, Mumbai - 400050`}
                             className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-xs focus:ring-2 focus:ring-red-500 leading-relaxed font-sans"
                           />
+                        </div>
+
+                        {/* Quick Save Button for Designer */}
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={handleSaveSetting}
+                            disabled={savingSetting}
+                            className="w-full py-3.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-600/25 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                          >
+                            <Save className="w-4 h-4" />
+                            {savingSetting ? 'Saving Settings...' : `Save ${activeSettingCode} Template & CC Emails`}
+                          </button>
                         </div>
                       </div>
 
