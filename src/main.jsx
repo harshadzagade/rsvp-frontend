@@ -30,9 +30,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/create-event" element={<AdminCreateEvent />} />
 
-        {/* SFX Seminar Explicit Routes */}
+        {/* SFX Seminar Explicit Route */}
         <Route path="/imm-sfx-seminar" element={<SFXLandingPage />} />
-        <Route path="/sfx-seminar" element={<SFXLandingPage />} />
 
         {/* Important: Catch-all slug route should go LAST */}
         <Route path="/:slug" element={<ConferenceLandingPage />} />

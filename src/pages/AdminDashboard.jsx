@@ -468,6 +468,7 @@ export default function AdminDashboard() {
         `/api/events/${editingEvent.id}`,
         {
           title: editingEvent.title,
+          slug: (editingEvent.slug || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-'),
           venue: editingEvent.venue,
           fee: editingEvent.fee,
           date: editingEvent.date,
@@ -1998,6 +1999,22 @@ export default function AdminDashboard() {
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-900"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Custom Event Link URL (Slug)</label>
+                <div className="flex items-center rounded-xl border border-slate-300 bg-slate-50 px-3 py-1.5 focus-within:ring-2 focus-within:ring-red-500 focus-within:border-transparent">
+                  <span className="text-xs text-slate-500 font-mono select-none">{window.location.origin}/</span>
+                  <input
+                    type="text"
+                    value={editingEvent.slug || ''}
+                    onChange={(e) => setEditingEvent(p => ({ ...p, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') }))}
+                    placeholder="my-custom-event-link"
+                    className="w-full bg-transparent text-xs font-mono font-bold text-slate-900 focus:outline-none"
+                    required
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">💡 तुम्ही इव्हेंटची थेट URL लिंक येथून बदलू शकता (उदा. <code>imm-sfx-seminar</code>).</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
