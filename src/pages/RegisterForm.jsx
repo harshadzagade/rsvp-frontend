@@ -148,7 +148,7 @@ export default function RegisterForm(props) {
         win.document.write(result);
         win.document.close();
       } else {
-        navigate('/thank-you');
+        navigate(`/thank-you?slug=${event.slug}`);
       }
     } catch (err) {
       console.error('Error submitting form:', err);
