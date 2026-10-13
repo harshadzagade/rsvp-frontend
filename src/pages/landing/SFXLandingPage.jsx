@@ -231,7 +231,7 @@ export default function SFXLandingPage() {
                 transition={{ delay: 0.4, duration: 0.5 }}
                 className="inline-flex items-center gap-2 bg-[#C8282B] text-white px-5 py-2 rounded-full text-xs sm:text-sm font-black uppercase tracking-widest shadow-xl"
               >
-                <Paintbrush className="w-4 h-4 text-white" /> Special Effects Makeup Masterclass
+                <Paintbrush className="w-4 h-4 text-white" /> Special Effects Makeup Seminar
               </motion.div>
 
               <motion.h1
@@ -362,26 +362,19 @@ export default function SFXLandingPage() {
             </motion.div>
           </div>
 
-          {/* Right Column Parallax Visual Card */}
+          {/* Right Column Hero Poster Visual Card */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="lg:col-span-5 hidden lg:block"
+            className="lg:col-span-5 flex justify-center"
           >
-            <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl group">
+            <div className="relative w-full max-w-[460px] aspect-square rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-slate-900 group">
               <img
                 src={SFXBanner}
                 alt="Special Effects Live Demo Preview"
-                className="w-full h-[380px] object-cover transition-transform duration-700 group-hover:scale-105"
+                className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-6 flex flex-col justify-end">
-                <span className="bg-[#C8282B] text-white text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full w-max mb-2">
-                  Live Demonstration
-                </span>
-                <p className="text-white text-xl font-bold leading-snug">Hands-On SFX & Prosthetic Application</p>
-                <p className="text-slate-300 text-xs mt-1">Watch techniques applied live on a model, step by step.</p>
-              </div>
             </div>
           </motion.div>
         </motion.div>
