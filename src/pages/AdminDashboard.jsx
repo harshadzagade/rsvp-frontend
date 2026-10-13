@@ -1361,37 +1361,38 @@ export default function AdminDashboard() {
                         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2.5">
                           <div className="flex items-center justify-between">
                             <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                              <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Associated Events for {activeSettingCode}
+                              <Sparkles className="w-4 h-4 text-amber-500" /> Associated Events for {activeSettingCode}
                             </label>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-mono">
                               {eventsForActiveSetting.length} Event{eventsForActiveSetting.length !== 1 ? 's' : ''}
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-500">
-                            This email template automatically delivers confirmation receipts to participants of all events assigned to <strong>{activeSettingCode}</strong>.
+                            Select an event to preview and configure this email template for:
                           </p>
-                          <div className="flex flex-wrap gap-1.5 pt-1">
-                            {eventsForActiveSetting.length > 0 ? (
-                              eventsForActiveSetting.map((evt) => (
-                                <button
-                                  key={evt.id}
-                                  type="button"
-                                  onClick={() => setTemplatePreviewEventId(evt.id.toString())}
-                                  className={`text-[11px] font-bold px-2.5 py-1 rounded-xl transition flex items-center gap-1.5 border ${
-                                    (selectedPreviewEvent?.id === evt.id)
-                                      ? 'bg-amber-100/80 border-amber-300 text-amber-900 shadow-2xs ring-1 ring-amber-400'
-                                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100 shadow-2xs'
-                                  }`}
-                                  title="Click to preview template with this event"
-                                >
-                                  <span>🎯 {evt.title}</span>
-                                  <span className="text-[10px] text-slate-400 font-mono">/{evt.slug}</span>
-                                </button>
-                              ))
-                            ) : (
-                              <span className="text-xs text-slate-400 italic">No events currently linked to {activeSettingCode}</span>
-                            )}
-                          </div>
+                          {eventsForActiveSetting.length > 0 ? (
+                            <div className="pt-1">
+                              <select
+                                value={templatePreviewEventId || (selectedPreviewEvent?.id?.toString() || '')}
+                                onChange={(e) => setTemplatePreviewEventId(e.target.value)}
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-800 shadow-2xs focus:outline-none focus:ring-2 focus:ring-red-500"
+                              >
+                                {eventsForActiveSetting.map((evt) => (
+                                  <option key={evt.id} value={evt.id.toString()}>
+                                    🎯 {evt.title} (/{evt.slug})
+                                  </option>
+                                ))}
+                              </select>
+                              {selectedPreviewEvent && (
+                                <p className="text-[11px] text-emerald-700 font-medium mt-1.5 flex items-center gap-1">
+                                  <span>✓ Currently previewing:</span>
+                                  <strong className="font-bold">{selectedPreviewEvent.title}</strong>
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 italic">No events currently linked to {activeSettingCode}</p>
+                          )}
                         </div>
 
                         {/* Brand Theme Accent Color */}
