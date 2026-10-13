@@ -177,19 +177,24 @@ export default function AdminDashboard() {
     }
   });
 
+  const isSuperAdmin = currentUser?.role === 'SUPERADMIN';
+
   const isRestrictedToInstitute = useMemo(() => {
-    if (!currentUser || currentUser.role === 'SUPERADMIN') return null;
+    if (!currentUser || isSuperAdmin) return null;
     const inst = currentUser.institute?.toUpperCase();
     if (inst && !['ALL', 'MUMBAI EDUCATIONAL TRUST'].includes(inst)) {
       return inst;
     }
     return null;
-  }, [currentUser]);
+  }, [currentUser, isSuperAdmin]);
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rsvps, setRsvps] = useState([]);
-  const [activeView, setActiveView] = useState('overview'); // 'overview' | 'status-board' | 'rsvps' | 'events' | 'settings' | 'users'
+  const [activeView, setActiveView] = useState(() => {
+    const userRole = JSON.parse(localStorage.getItem('admin_user') || '{}')?.role;
+    return userRole === 'SUPERADMIN' ? 'overview' : 'rsvps';
+  }); // 'overview' | 'status-board' | 'rsvps' | 'events' | 'settings' | 'users'
   const [selectedRsvpId, setSelectedRsvpId] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
   const [copiedSlug, setCopiedSlug] = useState(null);
@@ -266,8 +271,12 @@ export default function AdminDashboard() {
 
     const eventRequest = axios.get('/api/events', { headers });
     const rsvpRequest = axios.get('/api/admin/rsvps', { headers });
-    const settingsRequest = axios.get('/api/admin/settings', { headers }).catch(() => ({ data: [] }));
-    const usersRequest = axios.get('/api/admin/users', { headers }).catch(() => ({ data: [] }));
+    const settingsRequest = role === 'SUPERADMIN' 
+      ? axios.get('/api/admin/settings', { headers }).catch(() => ({ data: [] }))
+      : Promise.resolve({ data: [] });
+    const usersRequest = role === 'SUPERADMIN'
+      ? axios.get('/api/admin/users', { headers }).catch(() => ({ data: [] }))
+      : Promise.resolve({ data: [] });
 
     Promise.all([eventRequest, rsvpRequest, settingsRequest, usersRequest])
       .then(([eventRes, rsvpRes, setRes, usrRes]) => {
@@ -774,74 +783,101 @@ export default function AdminDashboard() {
             </div>
 
             <div className="mt-6 space-y-1.5">
-              <button
-                onClick={() => setActiveView('overview')}
-                className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center gap-2.5 ${activeView === 'overview' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
-              >
-                <span>Dashboard Overview</span>
-              </button>
+              {/* If user is not SUPERADMIN, they only see Registrations and Export */}
+              {!isSuperAdmin ? (
+                <>
+                  <button
+                    onClick={() => setActiveView('rsvps')}
+                    className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-bold transition flex items-center justify-between ${activeView === 'rsvps' ? 'bg-white text-slate-900 shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
+                  >
+                    <span>Registered Participants</span>
+                    <span className="rounded-full bg-red-600 text-white px-2.5 py-0.5 text-xs font-bold">
+                      {filteredRsvps.length}
+                    </span>
+                  </button>
 
-              <button
-                onClick={() => setActiveView('status-board')}
-                className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center justify-between ${activeView === 'status-board' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
-              >
-                <span className="flex items-center gap-2.5">
-                  <Link2 className="w-4 h-4 text-emerald-400" />
-                  <span>Link Board</span>
-                </span>
-                <span className="rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5 text-xs font-bold">
-                  {summary.activeLinksCount} Open
-                </span>
-              </button>
+                  <div className="pt-2">
+                    <button
+                      onClick={handleExport}
+                      className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-left text-sm font-bold text-white transition hover:bg-emerald-500 shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Save className="w-4 h-4" /> Export Excel ({filteredRsvps.length})
+                    </button>
+                  </div>
+                </>
+              ) : (
+                /* SUPERADMIN Full Management Menu */
+                <>
+                  <button
+                    onClick={() => setActiveView('overview')}
+                    className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center gap-2.5 ${activeView === 'overview' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
+                  >
+                    <span>Dashboard Overview</span>
+                  </button>
 
-              <button
-                onClick={() => setActiveView('rsvps')}
-                className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center justify-between ${activeView === 'rsvps' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
-              >
-                <span>RSVP & Payments</span>
-                <span className="rounded-full bg-slate-700 text-slate-300 px-2 py-0.5 text-xs font-bold">
-                  {summary.totalRsvps}
-                </span>
-              </button>
+                  <button
+                    onClick={() => setActiveView('status-board')}
+                    className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center justify-between ${activeView === 'status-board' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <Link2 className="w-4 h-4 text-emerald-400" />
+                      <span>Link Board</span>
+                    </span>
+                    <span className="rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5 text-xs font-bold">
+                      {summary.activeLinksCount} Open
+                    </span>
+                  </button>
 
-              <button
-                onClick={() => setActiveView('events')}
-                className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center gap-2.5 ${activeView === 'events' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
-              >
-                <span>Events Library</span>
-              </button>
+                  <button
+                    onClick={() => setActiveView('rsvps')}
+                    className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center justify-between ${activeView === 'rsvps' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
+                  >
+                    <span>RSVP & Payments</span>
+                    <span className="rounded-full bg-slate-700 text-slate-300 px-2 py-0.5 text-xs font-bold">
+                      {summary.totalRsvps}
+                    </span>
+                  </button>
 
-              <div className="pt-2 border-t border-slate-800">
-                <button
-                  onClick={() => setActiveView('settings')}
-                  className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center gap-2.5 ${activeView === 'settings' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
-                >
-                  <Settings className="w-4 h-4 text-amber-400" />
-                  <span>Payment & Email Setup</span>
-                </button>
+                  <button
+                    onClick={() => setActiveView('events')}
+                    className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center gap-2.5 ${activeView === 'events' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
+                  >
+                    <span>Events Library</span>
+                  </button>
 
-                <button
-                  onClick={() => setActiveView('users')}
-                  className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center justify-between ${activeView === 'users' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
-                >
-                  <span className="flex items-center gap-2.5">
-                    <Users className="w-4 h-4 text-blue-400" />
-                    <span>User Logins & Access</span>
-                  </span>
-                  <span className="rounded-full bg-blue-500/20 text-blue-300 px-2 py-0.5 text-xs font-bold">
-                    {usersList.length}
-                  </span>
-                </button>
-              </div>
+                  <div className="pt-2 border-t border-slate-800">
+                    <button
+                      onClick={() => setActiveView('settings')}
+                      className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center gap-2.5 ${activeView === 'settings' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
+                    >
+                      <Settings className="w-4 h-4 text-amber-400" />
+                      <span>Payment & Email Setup</span>
+                    </button>
 
-              <div className="pt-3">
-                <button
-                  onClick={() => navigate('/admin/create-event')}
-                  className="w-full rounded-2xl bg-red-600 px-4 py-2.5 text-left text-sm font-bold text-white transition hover:bg-red-500 shadow-md flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" /> Create New Event
-                </button>
-              </div>
+                    <button
+                      onClick={() => setActiveView('users')}
+                      className={`w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium transition flex items-center justify-between ${activeView === 'users' ? 'bg-white text-slate-900 font-bold shadow-md' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-800'}`}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <Users className="w-4 h-4 text-blue-400" />
+                        <span>User Logins & Access</span>
+                      </span>
+                      <span className="rounded-full bg-blue-500/20 text-blue-300 px-2 py-0.5 text-xs font-bold">
+                        {usersList.length}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="pt-3">
+                    <button
+                      onClick={() => navigate('/admin/create-event')}
+                      className="w-full rounded-2xl bg-red-600 px-4 py-2.5 text-left text-sm font-bold text-white transition hover:bg-red-500 shadow-md flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" /> Create New Event
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
