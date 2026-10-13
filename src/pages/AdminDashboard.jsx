@@ -3,6 +3,7 @@ import axios from 'axios';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import {
   Link2, Power, Edit3, CheckCircle, XCircle, Copy, Plus, Trash2, X, Eye, EyeOff,
   Settings, Users, ShieldCheck, Key, Mail, MessageSquare, Save, Check, UserPlus,
@@ -440,9 +441,22 @@ export default function AdminDashboard() {
       setEvents((prev) =>
         prev.map((evt) => (evt.id === eventId ? { ...evt, isActive: newStatus } : evt))
       );
+
+      Swal.fire({
+        icon: 'success',
+        title: newStatus ? 'Link Activated!' : 'Link Deactivated!',
+        text: `इव्हेंट लिंक आता ${newStatus ? 'सुरू (Active)' : 'बंद (Inactive)'} करण्यात आली आहे.`,
+        timer: 1800,
+        showConfirmButton: false
+      });
     } catch (err) {
       console.error('Failed to toggle event link status:', err);
-      alert('Could not update event status. Please try again.');
+      Swal.fire({
+        icon: 'error',
+        title: 'त्रुटी!',
+        text: 'इव्हेंट स्टेटस बदलता आला नाही. कृपया पुन्हा प्रयत्न करा.',
+        confirmButtonColor: '#C8282B',
+      });
     }
   };
 
@@ -457,9 +471,19 @@ export default function AdminDashboard() {
 
   // Delete Event (SuperAdmin only)
   const handleDeleteEvent = async (event) => {
-    if (!window.confirm(`Are you sure you want to permanently delete event "${event.title}" (/${event.slug})?`)) {
-      return;
-    }
+    const result = await Swal.fire({
+      title: 'तुम्हाला हा इव्हेंट डिलीट करायचा आहे का?',
+      text: `"${event.title}" (/${event.slug}) हा इव्हेंट कायमचा डिलीट केला जाईल!`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'होय, डिलीट करा',
+      cancelButtonText: 'रद्द करा'
+    });
+
+    if (!result.isConfirmed) return;
+
     const token = localStorage.getItem('admin_token');
     try {
       await axios.delete(`/api/events/${event.id}`, {
@@ -467,10 +491,21 @@ export default function AdminDashboard() {
       });
       setEvents((prev) => prev.filter((e) => e.id !== event.id));
       if (editingEvent?.id === event.id) setEditingEvent(null);
-      alert(`Event "${event.title}" was deleted successfully.`);
+      Swal.fire({
+        icon: 'success',
+        title: 'इव्हेंट डिलीट झाला!',
+        text: `"${event.title}" यशस्वीरित्या हटवण्यात आला आहे.`,
+        timer: 2000,
+        confirmButtonColor: '#C8282B',
+      });
     } catch (err) {
       console.error('Failed to delete event:', err);
-      alert(err.response?.data?.error || 'Could not delete event. If it has participants, deactivate it instead.');
+      Swal.fire({
+        icon: 'error',
+        title: 'त्रुटी!',
+        text: err.response?.data?.error || 'इव्हेंट डिलीट करता आला नाही. जर या इव्हेंटवर पार्टिसिपंट्स असतील, तर डिलीट करण्याऐवजी लिंक Deactivate करा.',
+        confirmButtonColor: '#C8282B',
+      });
     }
   };
 
@@ -489,6 +524,22 @@ export default function AdminDashboard() {
     if (!editingEvent) return;
 
     const token = localStorage.getItem('admin_token');
+    const newFee = Number(editingEvent.fee !== undefined ? editingEvent.fee : 0);
+
+    // Sync default fee in feeOptions if options exist
+    let updatedFeeOptions = editingEvent.feeOptions;
+    if (updatedFeeOptions?.options?.length) {
+      updatedFeeOptions = {
+        ...updatedFeeOptions,
+        options: updatedFeeOptions.options.map(opt => {
+          if (!opt.conditions || opt.conditions.length === 0) {
+            return { ...opt, fee: newFee };
+          }
+          return opt;
+        })
+      };
+    }
+
     try {
       const res = await axios.put(
         `/api/events/${editingEvent.id}`,
@@ -496,7 +547,8 @@ export default function AdminDashboard() {
           title: editingEvent.title,
           slug: (editingEvent.slug || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-'),
           venue: editingEvent.venue,
-          fee: editingEvent.fee,
+          fee: newFee,
+          feeOptions: updatedFeeOptions,
           date: editingEvent.date,
           institute: editingEvent.institute,
           isActive: editingEvent.isActive,
@@ -509,10 +561,23 @@ export default function AdminDashboard() {
         prev.map((evt) => (evt.id === editingEvent.id ? res.data : evt))
       );
       setEditingEvent(null);
-      alert('Event and Form configuration updated successfully!');
+
+      Swal.fire({
+        icon: 'success',
+        title: 'इव्हेंट सेव्ह झाला!',
+        text: `इव्हेंट "${res.data.title}" आणि नवीन फी (₹${res.data.fee}) यशस्वीरित्या अपडेट करण्यात आली आहे.`,
+        timer: 2500,
+        showConfirmButton: true,
+        confirmButtonColor: '#C8282B',
+      });
     } catch (err) {
       console.error('Failed to update event:', err);
-      alert('Failed to update event. Please check inputs.');
+      Swal.fire({
+        icon: 'error',
+        title: 'अपडेट अयशस्वी!',
+        text: err.response?.data?.error || 'इव्हेंट अपडेट करताना त्रुटी आली. कृपया माहिती तपासा.',
+        confirmButtonColor: '#C8282B',
+      });
     }
   };
 

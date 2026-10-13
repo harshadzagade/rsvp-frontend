@@ -96,6 +96,7 @@ export default function SFXLandingPage() {
     setIsSubmitting(true);
 
     const eventId = event?.id || 8;
+    const activeFee = event?.fee !== undefined ? Number(event.fee) : 299;
     const payload = {
       eventId,
       fullName: formData.fullName,
@@ -104,7 +105,7 @@ export default function SFXLandingPage() {
       formData: {
         ...formData,
         amountBreakdown: {
-          total: 299.00
+          total: activeFee
         }
       }
     };
@@ -567,8 +568,14 @@ export default function SFXLandingPage() {
                     <span className="text-xs text-slate-400">Special Effects (SFX) Seminar & Live Demo</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-slate-400 line-through mr-2">₹999</span>
-                    <span className="text-[#C8282B] font-extrabold text-lg">₹299</span>
+                    {(event?.fee === undefined || Number(event?.fee) > 0) && (
+                      <span className="text-xs text-slate-400 line-through mr-2">₹999</span>
+                    )}
+                    <span className="text-[#C8282B] font-extrabold text-lg">
+                      {event?.fee !== undefined
+                        ? (Number(event.fee) > 0 ? `₹${Number(event.fee)}` : 'Free')
+                        : '₹299'}
+                    </span>
                   </div>
                 </div>
 
@@ -577,7 +584,11 @@ export default function SFXLandingPage() {
                   disabled={isSubmitting}
                   className="w-full bg-[#C8282B] hover:bg-[#a61f22] text-white font-semibold text-base py-3.5 rounded-full transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 mt-2"
                 >
-                  {isSubmitting ? 'Processing...' : 'Proceed to Pay ₹299'}
+                  {isSubmitting
+                    ? 'Processing...'
+                    : event?.fee !== undefined
+                      ? (Number(event.fee) > 0 ? `Proceed to Pay ₹${Number(event.fee)}` : 'Register Free Now')
+                      : 'Proceed to Pay ₹299'}
                 </button>
               </form>
             </div>
