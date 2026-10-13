@@ -215,6 +215,7 @@ export default function AdminDashboard() {
   const [settingSuccess, setSettingSuccess] = useState('');
   const [showPasswordMap, setShowPasswordMap] = useState({});
   const [settingSubTab, setSettingSubTab] = useState('gateway'); // 'gateway' | 'template'
+  const [templatePreviewEventId, setTemplatePreviewEventId] = useState('');
 
   // Team & Users State
   const [usersList, setUsersList] = useState([]);
@@ -312,6 +313,15 @@ export default function AdminDashboard() {
 
   const filteredEvents = useMemo(() => filterEvents(events, filters), [events, filters]);
   const filteredRsvps = useMemo(() => filterRsvps(rsvps, filters), [rsvps, filters]);
+
+  const availableEventsForDropdown = useMemo(() => {
+    const targetInst = isRestrictedToInstitute || filters.institute;
+    return events.filter((e) => {
+      const yearMatch = !filters.year || (e.date && new Date(e.date).getFullYear().toString() === filters.year);
+      const instMatch = !targetInst || inferInstitute(e.title, e.slug, e.venue, e.institute) === targetInst;
+      return yearMatch && instMatch;
+    });
+  }, [events, isRestrictedToInstitute, filters.institute, filters.year]);
 
   useEffect(() => {
     if (!filteredRsvps.length) {
@@ -713,7 +723,24 @@ export default function AdminDashboard() {
   };
 
   const updateFilter = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    setFilters((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === 'institute' || key === 'year') {
+        const targetInst = isRestrictedToInstitute || (key === 'institute' ? value : next.institute);
+        const targetYear = key === 'year' ? value : next.year;
+        if (next.eventId) {
+          const selectedEvent = events.find(e => e.id.toString() === next.eventId);
+          if (selectedEvent) {
+            const inst = inferInstitute(selectedEvent.title, selectedEvent.slug, selectedEvent.venue, selectedEvent.institute);
+            const year = selectedEvent.date ? new Date(selectedEvent.date).getFullYear().toString() : '';
+            if ((targetInst && inst !== targetInst) || (targetYear && year !== targetYear)) {
+              next.eventId = '';
+            }
+          }
+        }
+      }
+      return next;
+    });
   };
 
   const activeSettingObj = instituteSettings.find(s => s.instituteCode === activeSettingCode) || {
@@ -734,15 +761,26 @@ export default function AdminDashboard() {
     brandColor: '#B91C1C',
   };
 
+  const eventsForActiveSetting = useMemo(() => {
+    return events.filter(e => inferInstitute(e.title, e.slug, e.venue, e.institute) === activeSettingCode);
+  }, [events, activeSettingCode]);
+
+  const selectedPreviewEvent = useMemo(() => {
+    if (templatePreviewEventId) {
+      return events.find(e => e.id.toString() === templatePreviewEventId) || null;
+    }
+    return eventsForActiveSetting[0] || null;
+  }, [events, templatePreviewEventId, eventsForActiveSetting]);
+
   const samplePreviewData = useMemo(() => ({
     name: 'Rahul Sharma',
-    eventName: activeSettingCode === 'IMM' ? 'SFX & Prosthetic Make-up Seminar' : `${activeSettingCode} National Conference 2026`,
-    date: '18th Oct 2026, 10:00 AM',
-    venue: 'MET Convention Centre, Bandra West, Mumbai',
-    amount: '2000',
+    eventName: selectedPreviewEvent ? selectedPreviewEvent.title : (activeSettingCode === 'IMM' ? 'SFX & Prosthetic Make-up Seminar' : `${activeSettingCode} National Conference 2026`),
+    date: selectedPreviewEvent?.date ? new Date(selectedPreviewEvent.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '18th Oct 2026, 10:00 AM',
+    venue: selectedPreviewEvent?.venue || 'MET Convention Centre, Bandra West, Mumbai',
+    amount: selectedPreviewEvent?.fee ? String(selectedPreviewEvent.fee) : '2000',
     txnid: 'TXN982341',
     instituteName: activeSettingObj.instituteName || activeSettingCode,
-  }), [activeSettingCode, activeSettingObj.instituteName]);
+  }), [selectedPreviewEvent, activeSettingCode, activeSettingObj.instituteName]);
 
   const renderPreviewText = (template, fallback = '') => {
     let text = (template !== undefined && template !== null && template !== '') ? template : fallback;
@@ -750,6 +788,8 @@ export default function AdminDashboard() {
     return text
       .replace(/\{name\}/g, samplePreviewData.name)
       .replace(/\{eventName\}/g, samplePreviewData.eventName)
+      .replace(/\{eventTitle\}/g, samplePreviewData.eventName)
+      .replace(/\{confName\}/g, samplePreviewData.eventName)
       .replace(/\{date\}/g, samplePreviewData.date)
       .replace(/\{venue\}/g, samplePreviewData.venue)
       .replace(/\{amount\}/g, samplePreviewData.amount)
@@ -952,8 +992,8 @@ export default function AdminDashboard() {
                   onChange={(e) => updateFilter('eventId', e.target.value)}
                   className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-medium truncate max-w-full focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
-                  <option value="">All events</option>
-                  {events.map((event) => (
+                  <option value="">All events ({availableEventsForDropdown.length})</option>
+                  {availableEventsForDropdown.map((event) => (
                     <option key={event.id} value={event.id.toString()}>
                       {event.title}
                     </option>
@@ -1270,6 +1310,43 @@ export default function AdminDashboard() {
                       {/* Left Column: Template Form Controls (5 cols) */}
                       <div className="lg:col-span-5 space-y-5">
                         
+                        {/* Associated Events for Active Setting */}
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                              <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Associated Events for {activeSettingCode}
+                            </label>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-mono">
+                              {eventsForActiveSetting.length} Event{eventsForActiveSetting.length !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500">
+                            This email template automatically delivers confirmation receipts to participants of all events assigned to <strong>{activeSettingCode}</strong>.
+                          </p>
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {eventsForActiveSetting.length > 0 ? (
+                              eventsForActiveSetting.map((evt) => (
+                                <button
+                                  key={evt.id}
+                                  type="button"
+                                  onClick={() => setTemplatePreviewEventId(evt.id.toString())}
+                                  className={`text-[11px] font-bold px-2.5 py-1 rounded-xl transition flex items-center gap-1.5 border ${
+                                    (selectedPreviewEvent?.id === evt.id)
+                                      ? 'bg-amber-100/80 border-amber-300 text-amber-900 shadow-2xs ring-1 ring-amber-400'
+                                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100 shadow-2xs'
+                                  }`}
+                                  title="Click to preview template with this event"
+                                >
+                                  <span>🎯 {evt.title}</span>
+                                  <span className="text-[10px] text-slate-400 font-mono">/{evt.slug}</span>
+                                </button>
+                              ))
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">No events currently linked to {activeSettingCode}</span>
+                            )}
+                          </div>
+                        </div>
+
                         {/* Brand Theme Accent Color */}
                         <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-3">
                           <div className="flex items-center justify-between">
@@ -1430,6 +1507,30 @@ export default function AdminDashboard() {
                             <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-700 text-slate-300">
                               Recipient Client View
                             </span>
+                          </div>
+
+                          {/* Event Preview Selector Toolbar */}
+                          <div className="bg-slate-800/95 px-4 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-700">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5" /> Previewing For Event:
+                              </span>
+                            </div>
+                            {eventsForActiveSetting.length > 0 ? (
+                              <select
+                                value={templatePreviewEventId || (selectedPreviewEvent?.id?.toString() || '')}
+                                onChange={(e) => setTemplatePreviewEventId(e.target.value)}
+                                className="rounded-xl border border-slate-600 bg-slate-700/90 px-3 py-1 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                              >
+                                {eventsForActiveSetting.map((evt) => (
+                                  <option key={evt.id} value={evt.id.toString()}>
+                                    {evt.title} (/{evt.slug})
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <span className="text-[11px] text-slate-400 italic">Default Template Preview</span>
+                            )}
                           </div>
 
                           {/* Email Headers Meta Box */}
@@ -1833,7 +1934,7 @@ export default function AdminDashboard() {
 
           {/* VIEW: RSVP TABLE & DETAIL DRAWER */}
           {['overview', 'rsvps'].includes(activeView) && (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 items-start">
               {/* Table */}
               <section className="rounded-3xl bg-white p-5 shadow-sm xl:col-span-2">
                 <div className="flex items-center justify-between pb-4 border-b">
@@ -1841,10 +1942,10 @@ export default function AdminDashboard() {
                   <span className="text-xs text-slate-400 font-mono">Showing filtered set</span>
                 </div>
 
-                <div className="mt-4 overflow-x-auto">
+                <div className="mt-4 max-h-[620px] overflow-y-auto overflow-x-auto rounded-2xl border border-slate-100 shadow-inner">
                   <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 shadow-2xs">
+                      <tr>
                         <th className="py-3 px-3">Participant</th>
                         <th className="py-3 px-3">Event & Inst</th>
                         <th className="py-3 px-3">Status</th>
@@ -1853,7 +1954,7 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {filteredRsvps.slice(0, 50).map((r) => {
+                      {filteredRsvps.map((r) => {
                         const isSelected = r.id === selectedRsvpId;
                         const inst = inferInstitute(r.event?.title, r.event?.slug || '', r.event?.venue, r.event?.institute);
 
@@ -1894,7 +1995,7 @@ export default function AdminDashboard() {
               </section>
 
               {/* Detail Drawer */}
-              <section className="rounded-3xl bg-white p-5 shadow-sm">
+              <section className="rounded-3xl bg-white p-5 shadow-sm xl:sticky xl:top-6 self-start max-h-[calc(100vh-3rem)] overflow-y-auto">
                 <h3 className="text-lg font-bold text-slate-900 border-b pb-3">Participant Details</h3>
                 {selectedRsvp ? (
                   <div className="mt-4 space-y-4">
@@ -1952,6 +2053,22 @@ export default function AdminDashboard() {
                       <p className="text-xs text-slate-400 font-mono">/{evt.slug} • Venue: {evt.venue}</p>
                     </div>
                     <div className="flex items-center gap-2">
+                      {isSuperAdmin && (
+                        <button
+                          onClick={() => {
+                            const inst = inferInstitute(evt.title, evt.slug, evt.venue, evt.institute);
+                            setActiveSettingCode(inst);
+                            setTemplatePreviewEventId(evt.id.toString());
+                            setActiveView('settings');
+                            setSettingSubTab('template');
+                          }}
+                          className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1 transition"
+                          title="Customize email template for this event"
+                        >
+                          <Mail className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Email Template</span>
+                        </button>
+                      )}
                       <button
                         onClick={() => handleOpenEditModal(evt)}
                         className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700"
@@ -2132,6 +2249,40 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Confirmation Email & Template Association Banner */}
+              <div className="rounded-2xl bg-amber-50/80 border border-amber-200/80 p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-amber-700" />
+                    <span className="text-xs font-bold text-slate-800">Confirmation Email & Template</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-mono">
+                    {editingEvent.institute || 'IMM'} Template
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  या इव्हेंटची नोंदणी झाल्यावर सहभागींना <strong>{editingEvent.institute || 'IMM'}</strong> अंतर्गत कॉन्फिगर केलेला ईमेल पाठवला जातो. यामध्ये इव्हेंटचे नाव (<code>{'{eventName}'}</code>), तारीख, स्थळ आणि फी आपोआप समाविष्ट होते.
+                </p>
+                {isSuperAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const inst = editingEvent.institute || 'IMM';
+                      const evtId = editingEvent.id;
+                      setEditingEvent(null);
+                      setActiveSettingCode(inst);
+                      setTemplatePreviewEventId(evtId.toString());
+                      setActiveView('settings');
+                      setSettingSubTab('template');
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-900 bg-white px-3 py-1.5 rounded-xl border border-amber-300 shadow-2xs hover:bg-amber-50 transition"
+                  >
+                    <Palette className="w-3.5 h-3.5 text-amber-600" />
+                    Customize {editingEvent.institute || 'IMM'} Email Template & Live Preview &rarr;
+                  </button>
+                )}
               </div>
 
               <div className="pt-4 border-t flex justify-end gap-2">
