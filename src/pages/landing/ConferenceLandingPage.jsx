@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { CalendarDays, MapPin, Wallet, Users } from 'lucide-react';
 import RegisterForm from '../RegisterForm';
-import { API_BASE } from '../../config';
+import { API_BASE, handleApiResponse } from '../../config';
 
 const formatDate = (event) => {
   const value = event?.date;
@@ -67,10 +67,7 @@ const ConferenceLandingPage = () => {
 
   useEffect(() => {
     fetch(`${API_BASE}/events/slug/${slug}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Event not found');
-        return res.json();
-      })
+      .then(handleApiResponse)
       .then((data) => {
         setEvent(data);
         setLoading(false);

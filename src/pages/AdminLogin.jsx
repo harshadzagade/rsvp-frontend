@@ -1,7 +1,7 @@
 // src/pages/AdminLogin.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE } from '../config';
+import { API_BASE, handleApiResponse } from '../config';
 
 export default function AdminLogin() {
     const navigate = useNavigate();
@@ -20,9 +20,8 @@ export default function AdminLogin() {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await res.json();
-
-            if (!res.ok) throw new Error(data.error || 'Login failed');
+            const data = await handleApiResponse(res);
+
 
             localStorage.setItem('admin_token', data.token);
             localStorage.setItem('admin_user', JSON.stringify(data.user));

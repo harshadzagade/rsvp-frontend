@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE } from '../config';
+import { API_BASE, handleApiResponse } from '../config';
 
 
 const ICS_CONFERENCE_TEMPLATE = {
@@ -8,6 +8,7 @@ const ICS_CONFERENCE_TEMPLATE = {
   slug: 'ics-conference-2026',
   date: '2026-08-15T09:00',
   venue: 'MET Institute of Computer Science',
+  institute: 'ICS',
   // fee: '1000', 
   formFields: [
     { name: 'fullname', label: 'Full Name', type: 'text', required: true },
@@ -87,6 +88,7 @@ export default function AdminCreateEventForm() {
     date: '',
     venue: '',
     fee: '',
+    institute: 'IMM',
     formFields: [],
   });
   const [fieldInput, setFieldInput] = useState(emptyFieldInput);
@@ -204,8 +206,7 @@ export default function AdminCreateEventForm() {
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Event creation failed');
+      const data = await handleApiResponse(res);
       navigate('/admin/dashboard');
     } catch (err) {
       console.error(err);
@@ -281,7 +282,15 @@ export default function AdminCreateEventForm() {
         <input name="title" placeholder="Title" value={form.title} onChange={handleChange} className="border p-2 w-full rounded-md" required />
         <input name="slug" placeholder="Slug" value={form.slug} onChange={handleChange} className="border p-2 w-full rounded-md" required />
         <input name="date" type="datetime-local" value={form.date} onChange={handleChange} className="border p-2 w-full rounded-md" required />
-        <input name="venue" placeholder="Venue" value={form.venue} onChange={handleChange} className="border p-2 w-full rounded-md" required />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <input name="venue" placeholder="Venue" value={form.venue} onChange={handleChange} className="border p-2 w-full rounded-md" required />
+          <select name="institute" value={form.institute || 'IMM'} onChange={handleChange} className="border p-2 w-full rounded-md font-bold">
+            <option value="IMM">IMM Gateway (Management & SFX Seminar)</option>
+            <option value="IOP">IOP Gateway (Pharmacy)</option>
+            <option value="ICS">ICS Gateway (Computer Science)</option>
+            <option value="PGDM">PGDM Gateway (AMDC)</option>
+          </select>
+        </div>
         <input name="fee" type="number" value={form.fee} placeholder="Default Fee" onChange={handleChange} className="border p-2 w-full rounded-md" required />
 
         <div className="border p-4 rounded bg-gray-50 mt-4">

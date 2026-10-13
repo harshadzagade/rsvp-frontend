@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LightbulbIcon, CalendarIcon, MapPinIcon, UserIcon } from 'lucide-react';
 
+import { API_BASE, handleApiResponse } from '../../config';
+
 export default function IMMLandingPage() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,11 +13,8 @@ export default function IMMLandingPage() {
   const { slug } = useParams();
 
   useEffect(() => {
-    fetch(`/api/events/slug/${slug}`)
-      .then(res => {
-        if (!res.ok) throw new Error('Not found');
-        return res.json();
-      })
+    fetch(`${API_BASE}/events/slug/${slug}`)
+      .then(handleApiResponse)
       .then(data => {
         setEvent(data);
         setLoading(false);

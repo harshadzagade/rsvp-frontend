@@ -46,20 +46,23 @@ export function ThankYouPage() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const isFree = queryParams.get('free') === 'true';
-  const slug = queryParams.get('slug') || 'ics-conference-2026';
+  const slug = queryParams.get('slug') || 'imm-sfx-seminar';
+  const txnid = queryParams.get('txnid') || queryParams.get('txn') || '';
 
   return (
-    <PageShell
-      tone="bg-gradient-to-br from-emerald-100 via-white to-lime-50"
-      title={isFree ? 'Registration Confirmed' : 'Payment Successful'}
-      message={
-        isFree
-          ? "Your registration has been confirmed successfully. We've emailed the programme details to the participant and admin team."
-          : "Your payment has been received successfully. We've emailed the programme details to the participant and admin team."
-      }
-      ctaLabel="Back to Home"
-      ctaTo={`/${slug}`}
-    />
+    <div className="space-y-6">
+      <PageShell
+        tone="bg-gradient-to-br from-emerald-100 via-white to-lime-50"
+        title={isFree ? 'Registration Confirmed' : 'Payment Successful'}
+        message={
+          isFree
+            ? "Your registration has been confirmed successfully. We've emailed the programme details to the participant and admin team."
+            : "Your payment of ₹299.00 has been received successfully. We've emailed your confirmation and fee receipt to your inbox."
+        }
+        ctaLabel="Download Fee Receipt"
+        ctaTo={txnid ? `/receipt?txnid=${txnid}` : `/receipt`}
+      />
+    </div>
   );
 }
 

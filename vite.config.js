@@ -14,7 +14,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'https://events.met.edu',
+        target: process.env.VITE_BACKEND_URL || 'http://localhost:5350',
         changeOrigin: true,
         secure: false,
       },
