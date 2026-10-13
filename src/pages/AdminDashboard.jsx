@@ -458,6 +458,25 @@ export default function AdminDashboard() {
     });
   };
 
+  // Delete Event (SuperAdmin only)
+  const handleDeleteEvent = async (event) => {
+    if (!window.confirm(`Are you sure you want to permanently delete event "${event.title}" (/${event.slug})?`)) {
+      return;
+    }
+    const token = localStorage.getItem('admin_token');
+    try {
+      await axios.delete(`/api/events/${event.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEvents((prev) => prev.filter((e) => e.id !== event.id));
+      if (editingEvent?.id === event.id) setEditingEvent(null);
+      alert(`Event "${event.title}" was deleted successfully.`);
+    } catch (err) {
+      console.error('Failed to delete event:', err);
+      alert(err.response?.data?.error || 'Could not delete event. If it has participants, deactivate it instead.');
+    }
+  };
+
   // Open Edit Event Modal
   const handleOpenEditModal = (event) => {
     setEditingEvent({
@@ -2082,6 +2101,15 @@ export default function AdminDashboard() {
                       >
                         <Copy className="w-4 h-4" />
                       </button>
+                      {isSuperAdmin && (
+                        <button
+                          onClick={() => handleDeleteEvent(evt)}
+                          className="p-1.5 rounded-xl text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 transition"
+                          title="Delete Event"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -2285,20 +2313,32 @@ export default function AdminDashboard() {
                 )}
               </div>
 
-              <div className="pt-4 border-t flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingEvent(null)}
-                  className="px-4 py-2 rounded-xl border text-xs font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md"
-                >
-                  Save Changes
-                </button>
+              <div className="pt-4 border-t flex items-center justify-between gap-2">
+                {isSuperAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteEvent(editingEvent)}
+                    className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-4 h-4 text-rose-600" />
+                    Delete Event
+                  </button>
+                )}
+                <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => setEditingEvent(null)}
+                    className="px-4 py-2 rounded-xl border text-xs font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md"
+                  >
+                    Save Changes
+                  </button>
+                </div>
               </div>
             </form>
           </div>
