@@ -316,12 +316,9 @@ export default function AdminDashboard() {
 
   const availableEventsForDropdown = useMemo(() => {
     const targetInst = isRestrictedToInstitute || filters.institute;
-    return events.filter((e) => {
-      const yearMatch = !filters.year || (e.date && new Date(e.date).getFullYear().toString() === filters.year);
-      const instMatch = !targetInst || inferInstitute(e.title, e.slug, e.venue, e.institute) === targetInst;
-      return yearMatch && instMatch;
-    });
-  }, [events, isRestrictedToInstitute, filters.institute, filters.year]);
+    if (!targetInst) return events;
+    return events.filter((e) => inferInstitute(e.title, e.slug, e.venue, e.institute) === targetInst);
+  }, [events, isRestrictedToInstitute, filters.institute]);
 
   useEffect(() => {
     if (!filteredRsvps.length) {
@@ -976,58 +973,89 @@ export default function AdminDashboard() {
               </div>
 
               <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                <input
-                  type="text"
-                  placeholder="Search name, email, event..."
-                  value={filters.search}
-                  onChange={(e) => updateFilter('search', e.target.value)}
-                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
-                />
-                <select
-                  value={filters.year}
-                  onChange={(e) => updateFilter('year', e.target.value)}
-                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  <option value="">All years</option>
-                  {yearOptions.map((year) => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
-                <select
-                  value={filters.institute}
-                  disabled={!!isRestrictedToInstitute}
-                  onChange={(e) => updateFilter('institute', e.target.value)}
-                  className={`rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-red-500 ${isRestrictedToInstitute ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
-                >
-                  {!isRestrictedToInstitute && <option value="">All institutes</option>}
-                  <option value="IMM">IMM (Management & SFX)</option>
-                  <option value="IOP">IOP (Pharmacy)</option>
-                  <option value="ICS">ICS (Computer Science)</option>
-                  <option value="PGDM">PGDM (AMDC)</option>
-                  {!isRestrictedToInstitute && <option value="Other">Other</option>}
-                </select>
-                <select
-                  value={filters.eventId}
-                  onChange={(e) => updateFilter('eventId', e.target.value)}
-                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-medium truncate max-w-full focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  <option value="">All events ({availableEventsForDropdown.length})</option>
-                  {availableEventsForDropdown.map((event) => (
-                    <option key={event.id} value={event.id.toString()}>
-                      {event.title}
+                {/* 1. Institute Selector */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">🏛️ Institute</label>
+                  <select
+                    value={filters.institute}
+                    disabled={!!isRestrictedToInstitute}
+                    onChange={(e) => updateFilter('institute', e.target.value)}
+                    className={`rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-red-500 ${isRestrictedToInstitute ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white text-slate-800'}`}
+                  >
+                    {!isRestrictedToInstitute && <option value="">All Institutes</option>}
+                    {availableInstituteCodes.map((code) => (
+                      <option key={code} value={code}>
+                        {code} {code === 'IMM' ? '(Management & SFX)' : code === 'IOP' ? '(Pharmacy)' : code === 'ICS' ? '(Computer Science)' : code === 'PGDM' ? '(AMDC)' : ''}
+                      </option>
+                    ))}
+                    {!isRestrictedToInstitute && <option value="Other">Other</option>}
+                  </select>
+                </div>
+
+                {/* 2. Event Selector (Adjacent to Institute) */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    🎯 Event ({availableEventsForDropdown.length})
+                  </label>
+                  <select
+                    value={filters.eventId}
+                    onChange={(e) => updateFilter('eventId', e.target.value)}
+                    className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold truncate max-w-full focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-slate-800"
+                  >
+                    <option value="">
+                      {filters.institute
+                        ? `All ${filters.institute} Events (${availableEventsForDropdown.length})`
+                        : `All Events (${availableEventsForDropdown.length})`}
                     </option>
-                  ))}
-                </select>
-                <select
-                  value={filters.status}
-                  onChange={(e) => updateFilter('status', e.target.value)}
-                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  <option value="">All statuses</option>
-                  <option value="success">Success (Paid)</option>
-                  <option value="failed">Failed</option>
-                  <option value="initiated">Initiated</option>
-                </select>
+                    {availableEventsForDropdown.map((event) => (
+                      <option key={event.id} value={event.id.toString()}>
+                        {event.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 3. Payment Status */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">💳 Status</label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) => updateFilter('status', e.target.value)}
+                    className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-slate-800"
+                  >
+                    <option value="">All statuses</option>
+                    <option value="success">Success (Paid)</option>
+                    <option value="failed">Failed</option>
+                    <option value="initiated">Initiated</option>
+                  </select>
+                </div>
+
+                {/* 4. Year */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">📅 Year</label>
+                  <select
+                    value={filters.year}
+                    onChange={(e) => updateFilter('year', e.target.value)}
+                    className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-slate-800"
+                  >
+                    <option value="">All years</option>
+                    {yearOptions.map((year) => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 5. Search Bar */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">🔍 Search</label>
+                  <input
+                    type="text"
+                    placeholder="Search name, email..."
+                    value={filters.search}
+                    onChange={(e) => updateFilter('search', e.target.value)}
+                    className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-slate-800"
+                  />
+                </div>
               </div>
             </section>
           )}
