@@ -73,6 +73,39 @@ export function ThankYouPage() {
   const targetUrl = `/${slug}`;
   const [countdown, setCountdown] = useState(5);
 
+  // Meta Pixel Purchase Tracking for SFX Seminar (ID: 1652187266507100)
+  useEffect(() => {
+    if (slug.includes('sfx')) {
+      if (!window.fbq) {
+        !(function (f, b, e, v, n, t, s) {
+          if (f.fbq) return;
+          n = f.fbq = function () {
+            n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+          };
+          if (!f._fbq) f._fbq = n;
+          n.push = n;
+          n.loaded = !0;
+          n.version = '2.0';
+          n.queue = [];
+          t = b.createElement(e);
+          t.async = !0;
+          t.src = v;
+          s = b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t, s);
+        })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+      }
+      if (typeof window.fbq === 'function') {
+        window.fbq('init', '1652187266507100');
+        window.fbq('track', 'PageView');
+        window.fbq('track', 'Purchase', {
+          content_name: 'Special Effects Make-up (SFX) Seminar',
+          value: isFree ? 0 : 299,
+          currency: 'INR',
+        });
+      }
+    }
+  }, [slug, isFree]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
