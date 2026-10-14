@@ -445,7 +445,7 @@ export default function AdminDashboard() {
       Swal.fire({
         icon: 'success',
         title: newStatus ? 'Link Activated!' : 'Link Deactivated!',
-        text: `इव्हेंट लिंक आता ${newStatus ? 'सुरू (Active)' : 'बंद (Inactive)'} करण्यात आली आहे.`,
+        text: `Event registration link is now ${newStatus ? 'Active' : 'Inactive'}.`,
         timer: 1800,
         showConfirmButton: false
       });
@@ -453,8 +453,8 @@ export default function AdminDashboard() {
       console.error('Failed to toggle event link status:', err);
       Swal.fire({
         icon: 'error',
-        title: 'त्रुटी!',
-        text: 'इव्हेंट स्टेटस बदलता आला नाही. कृपया पुन्हा प्रयत्न करा.',
+        title: 'Error!',
+        text: 'Failed to update event status. Please try again.',
         confirmButtonColor: '#C8282B',
       });
     }
@@ -472,14 +472,14 @@ export default function AdminDashboard() {
   // Delete Event (SuperAdmin only)
   const handleDeleteEvent = async (event) => {
     const result = await Swal.fire({
-      title: 'तुम्हाला हा इव्हेंट डिलीट करायचा आहे का?',
-      text: `"${event.title}" (/${event.slug}) हा इव्हेंट कायमचा डिलीट केला जाईल!`,
+      title: 'Are you sure you want to delete this event?',
+      text: `"${event.title}" (/${event.slug}) will be permanently deleted!`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#e11d48',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'होय, डिलीट करा',
-      cancelButtonText: 'रद्द करा'
+      confirmButtonText: 'Yes, delete it',
+      cancelButtonText: 'Cancel'
     });
 
     if (!result.isConfirmed) return;
@@ -493,8 +493,8 @@ export default function AdminDashboard() {
       if (editingEvent?.id === event.id) setEditingEvent(null);
       Swal.fire({
         icon: 'success',
-        title: 'इव्हेंट डिलीट झाला!',
-        text: `"${event.title}" यशस्वीरित्या हटवण्यात आला आहे.`,
+        title: 'Event Deleted!',
+        text: `"${event.title}" has been successfully deleted.`,
         timer: 2000,
         confirmButtonColor: '#C8282B',
       });
@@ -502,8 +502,8 @@ export default function AdminDashboard() {
       console.error('Failed to delete event:', err);
       Swal.fire({
         icon: 'error',
-        title: 'त्रुटी!',
-        text: err.response?.data?.error || 'इव्हेंट डिलीट करता आला नाही. जर या इव्हेंटवर पार्टिसिपंट्स असतील, तर डिलीट करण्याऐवजी लिंक Deactivate करा.',
+        title: 'Error!',
+        text: err.response?.data?.error || 'Failed to delete event. If participants are registered for this event, deactivate the link instead of deleting.',
         confirmButtonColor: '#C8282B',
       });
     }
@@ -564,8 +564,8 @@ export default function AdminDashboard() {
 
       Swal.fire({
         icon: 'success',
-        title: 'इव्हेंट सेव्ह झाला!',
-        text: `इव्हेंट "${res.data.title}" आणि नवीन फी (₹${res.data.fee}) यशस्वीरित्या अपडेट करण्यात आली आहे.`,
+        title: 'Event Saved!',
+        text: `Event "${res.data.title}" and fee (₹${res.data.fee}) updated successfully.`,
         timer: 2500,
         showConfirmButton: true,
         confirmButtonColor: '#C8282B',
@@ -574,8 +574,8 @@ export default function AdminDashboard() {
       console.error('Failed to update event:', err);
       Swal.fire({
         icon: 'error',
-        title: 'अपडेट अयशस्वी!',
-        text: err.response?.data?.error || 'इव्हेंट अपडेट करताना त्रुटी आली. कृपया माहिती तपासा.',
+        title: 'Update Failed!',
+        text: err.response?.data?.error || 'Error updating event. Please check the inputs.',
         confirmButtonColor: '#C8282B',
       });
     }
@@ -1406,11 +1406,11 @@ export default function AdminDashboard() {
                             <MessageSquare className="w-4 h-4 text-emerald-600" /> WhatsApp Community Integration
                           </h3>
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-700 font-bold uppercase tracking-wide">
-                            Optional (ऐच्छिक)
+                            Optional
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500">
-                          💡 WhatsApp ग्रुप लिंक देणे सक्तीचे नाही (100% Optional). जर तुमच्या इव्हेंटसाठी WhatsApp ग्रुप नसेल किंवा लिंक नको असेल, तर हे रिकाaction ठेवा (Leave blank). अशा वेळी ईमेलमध्ये WhatsApp चा कोणताही बॉक्स दिसणार नाही.
+                          💡 Providing a WhatsApp group link is 100% optional. If your event does not have a WhatsApp group, leave this field blank. The email will not display any WhatsApp card when left blank.
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
@@ -1419,7 +1419,7 @@ export default function AdminDashboard() {
                               type="url"
                               value={activeSettingObj.whatsappLink || ''}
                               onChange={(e) => updateActiveSettingField('whatsappLink', e.target.value)}
-                              placeholder="https://chat.whatsapp.com/... (किंवा रिकामे ठेवा)"
+                              placeholder="https://chat.whatsapp.com/... (or leave blank)"
                               className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-xs focus:ring-2 focus:ring-red-500"
                             />
                           </div>
@@ -2309,7 +2309,7 @@ export default function AdminDashboard() {
                     required
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">💡 तुम्ही इव्हेंटची थेट URL लिंक येथून बदलू शकता (उदा. <code>imm-sfx-seminar</code>).</p>
+                <p className="text-[10px] text-slate-400 mt-1">💡 You can directly modify the event URL slug here (e.g. <code>imm-sfx-seminar</code>).</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -2441,7 +2441,7 @@ export default function AdminDashboard() {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-600 leading-relaxed">
-                  या इव्हेंटची नोंदणी झाल्यावर सहभागींना <strong>{editingEvent.institute || 'IMM'}</strong> अंतर्गत कॉन्फिगर केलेला ईमेल पाठवला जातो. यामध्ये इव्हेंटचे नाव (<code>{'{eventName}'}</code>), तारीख, स्थळ आणि फी आपोआप समाविष्ट होते.
+                  Upon registration, participants receive the automated confirmation email configured under <strong>{editingEvent.institute || 'IMM'}</strong>. Event name (<code>{'{eventName}'}</code>), date, venue, and fee are dynamically included.
                 </p>
                 {isSuperAdmin && (
                   <button
