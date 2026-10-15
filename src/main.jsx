@@ -15,6 +15,7 @@ import IMMLandingPage from './pages/landing/IMMLandingPage';
 import ConferenceLandingPage from './pages/landing/ConferenceLandingPage';
 import SFXLandingPage from './pages/landing/SFXLandingPage';
 import FeeReceipt from './pages/FeeReceipt';
+import MRVMUNRegistration from './pages/MRVMUNRegistration';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -32,6 +33,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
         {/* SFX Seminar Explicit Route */}
         <Route path="/imm-sfx-seminar" element={<SFXLandingPage />} />
+
+        {/* MRV MUN Registration Route */}
+        <Route path="/mrv-mun" element={<MRVMUNRegistration />} />
 
         {/* Important: Catch-all slug route should go LAST */}
         <Route path="/:slug" element={<ConferenceLandingPage />} />
