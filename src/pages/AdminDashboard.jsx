@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import {
   Link2, Power, Edit3, CheckCircle, XCircle, Copy, Plus, Trash2, X, Eye, EyeOff,
   Settings, Users, ShieldCheck, Key, Mail, MessageSquare, Save, Check, UserPlus,
-  Palette, Layout, Sparkles, FileText, ExternalLink
+  Palette, Layout, Sparkles, FileText, ExternalLink, RefreshCw
 } from 'lucide-react';
 
 const inferInstitute = (eventTitle = '', slug = '', venue = '', eventInstitute = '') => {
@@ -52,6 +52,24 @@ const normalizeLabel = (key) =>
     .replace(/^./, (char) => char.toUpperCase());
 
 const getRsvpAmount = (rsvp) => {
+  if (!rsvp) return 0;
+
+  // 1. If an actual payment record exists with an amount, always honor what was paid!
+  if (rsvp?.payment?.amount !== undefined && rsvp?.payment?.amount !== null) {
+    return Number(rsvp.payment.amount);
+  }
+
+  // 2. If formData captured the specific amount / fee at registration time, use it
+  if (rsvp?.formData?.amount !== undefined && rsvp?.formData?.amount !== null && !isNaN(Number(rsvp.formData.amount))) {
+    return Number(rsvp.formData.amount);
+  }
+  if (rsvp?.formData?.feeAtRegistration !== undefined && rsvp?.formData?.feeAtRegistration !== null && !isNaN(Number(rsvp.formData.feeAtRegistration))) {
+    return Number(rsvp.formData.feeAtRegistration);
+  }
+  if (rsvp?.formData?.amountPaid !== undefined && rsvp?.formData?.amountPaid !== null && !isNaN(Number(rsvp.formData.amountPaid))) {
+    return Number(rsvp.formData.amountPaid);
+  }
+
   const event = rsvp?.event;
   if (!event) return 0;
 
@@ -202,6 +220,7 @@ export default function AdminDashboard() {
   const [selectedRsvpId, setSelectedRsvpId] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
   const [copiedSlug, setCopiedSlug] = useState(null);
+  const [verifyingTxn, setVerifyingTxn] = useState(null);
 
   // Filters
   const [filters, setFilters] = useState({
@@ -429,6 +448,47 @@ export default function AdminDashboard() {
       successfulPayments,
     };
   }, [events, rsvps]);
+
+  // Live verification of payment with PayU API
+  const handleVerifyPayment = async (txnid) => {
+    if (!txnid) return;
+    setVerifyingTxn(txnid);
+    const token = localStorage.getItem('admin_token');
+    try {
+      const response = await axios.post(`/api/admin/rsvps/${txnid}/verify`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = response.data;
+      if (data.success) {
+        setRsvps((prev) =>
+          prev.map((r) => (r.txnid === txnid ? { ...r, status: data.newStatus } : r))
+        );
+        Swal.fire({
+          icon: data.newStatus === 'success' ? 'success' : 'info',
+          title: 'PayU Status Synced!',
+          text: `PayU Status: "${data.payuStatus}". Record updated to "${data.newStatus}".`,
+          confirmButtonColor: '#C8282B',
+        });
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Verification Result',
+          text: data.message || 'Could not verify status with PayU',
+          confirmButtonColor: '#C8282B',
+        });
+      }
+    } catch (err) {
+      console.error('Failed to verify status with PayU:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Verification Error',
+        text: err.response?.data?.error || err.message || 'Failed to connect to PayU API.',
+        confirmButtonColor: '#C8282B',
+      });
+    } finally {
+      setVerifyingTxn(null);
+    }
+  };
 
   // Toggle Event Active/Inactive Status
   const handleToggleStatus = async (eventId, currentIsActive) => {
@@ -2182,13 +2242,30 @@ export default function AdminDashboard() {
                       <div className="mt-3 pt-3 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs">
                         <div>
                           <span className="text-slate-400">Payment Status:</span>
-                          <p className="font-bold uppercase text-emerald-700">{selectedRsvp.status}</p>
+                          <p className={`font-bold uppercase ${selectedRsvp.status === 'success' ? 'text-emerald-700' : selectedRsvp.status === 'initiated' ? 'text-amber-600' : 'text-red-600'}`}>
+                            {selectedRsvp.status}
+                          </p>
                         </div>
                         <div>
                           <span className="text-slate-400">Fee:</span>
                           <p className="font-bold text-slate-900">{formatMoney(getRsvpAmount(selectedRsvp))}</p>
                         </div>
                       </div>
+
+                      {/* Live PayU Status Verification Button */}
+                      {selectedRsvp.txnid && (
+                        <div className="mt-3 pt-3 border-t border-slate-200">
+                          <button
+                            type="button"
+                            onClick={() => handleVerifyPayment(selectedRsvp.txnid)}
+                            disabled={verifyingTxn === selectedRsvp.txnid}
+                            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 font-bold text-xs transition disabled:opacity-50"
+                          >
+                            <RefreshCw className={`w-3.5 h-3.5 ${verifyingTxn === selectedRsvp.txnid ? 'animate-spin text-blue-600' : ''}`} />
+                            <span>{verifyingTxn === selectedRsvp.txnid ? 'Verifying with PayU...' : 'Verify Status with PayU'}</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <div>
