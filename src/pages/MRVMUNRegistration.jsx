@@ -654,7 +654,7 @@ export default function MRVMUNRegistration() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-slate-400 pb-8">
-          <p>© {new Date().getFullYear()} MET Rishikul Vidyalaya • Model United Nations</p>
+          <p>© {new Date().getFullYear()} MET Rishikul Vidyalaya</p>
           <p className="mt-1">Bhujbal Knowledge City, Bandra Reclamation, Bandra West, Mumbai 400050</p>
         </div>
       </div>
