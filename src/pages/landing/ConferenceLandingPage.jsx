@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { CalendarDays, MapPin, Wallet, Users } from 'lucide-react';
 import RegisterForm from '../RegisterForm';
+import EventClosed from '../../components/EventClosed';
 import { API_BASE, handleApiResponse } from '../../config';
 
 const formatDate = (event) => {
@@ -87,6 +88,10 @@ const ConferenceLandingPage = () => {
 
   if (!event) {
     return <div className="p-10 text-center text-red-600">{loadError || 'Event not found.'}</div>;
+  }
+
+  if (event.isActive === false) {
+    return <EventClosed event={event} />;
   }
 
   return (

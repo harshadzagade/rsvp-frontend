@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Calendar, Clock, MapPin, Sparkles, Phone, Mail, ArrowRight, CheckCircle2, ShieldCheck, Paintbrush } from 'lucide-react';
 import { API_BASE, handleApiResponse } from '../../config';
+import EventClosed from '../../components/EventClosed';
 
 import KryolanLogo from '../../assets/Kryolan-Logo.jpg';
 import METLogo from '../../assets/MET_College_in_Mumbai_logo.png';
@@ -185,6 +186,10 @@ export default function SFXLandingPage() {
         </div>
       </div>
     );
+  }
+
+  if (event && event.isActive === false) {
+    return <EventClosed event={event} />;
   }
 
   return (

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import mrvMunLogo from '../assets/MRV_MUN_logo.png';
+import EventClosed from '../components/EventClosed';
 import { API_BASE } from '../config';
 
 const COMMITTEES = [
@@ -238,6 +239,10 @@ export default function MRVMUNRegistration() {
       setSubmitting(false);
     }
   };
+
+  if (!loading && event && event.isActive === false) {
+    return <EventClosed event={event} />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 text-slate-800">

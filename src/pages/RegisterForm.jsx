@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import EventClosed from '../components/EventClosed';
 import { API_BASE } from '../config';
 
 const formatCurrency = (currency, amount) => {
@@ -158,6 +159,7 @@ export default function RegisterForm(props) {
 
   if (loading) return <div className="p-6 text-center text-brand-700 animate-pulse">Loading event details...</div>;
   if (!event) return <div className="p-6 text-center text-red-600 animate-fade">{error || 'Event not found.'}</div>;
+  if (event.isActive === false) return <EventClosed event={event} />;
 
   return (
     <motion.div
