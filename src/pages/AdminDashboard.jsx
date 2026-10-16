@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import {
   Link2, Power, Edit3, CheckCircle, XCircle, Copy, Plus, Trash2, X, Eye, EyeOff,
   Settings, Users, ShieldCheck, Key, Mail, MessageSquare, Save, Check, UserPlus,
-  Palette, Layout, Sparkles
+  Palette, Layout, Sparkles, FileText, ExternalLink
 } from 'lucide-react';
 
 const inferInstitute = (eventTitle = '', slug = '', venue = '', eventInstitute = '') => {
@@ -29,6 +29,9 @@ const inferInstitute = (eventTitle = '', slug = '', venue = '', eventInstitute =
   }
   if (sSlug.includes('ics') || sSlug.includes('cism') || sSlug.includes('icetcism') || /\bics\b/i.test(sTitle) || /\bics\b/i.test(sVenue)) {
     return 'ICS';
+  }
+  if (sSlug.includes('mrv') || sTitle.includes('mrv') || sSlug.includes('mun') || sTitle.includes('mun')) {
+    return 'MRV';
   }
   return 'Other';
 };
@@ -253,7 +256,7 @@ export default function AdminDashboard() {
   });
 
   const availableInstituteCodes = useMemo(() => {
-    const defaultCodes = ['IMM', 'IOP', 'ICS', 'PGDM'];
+    const defaultCodes = ['IMM', 'IOP', 'ICS', 'PGDM', 'MRV'];
     const dbCodes = (instituteSettings || []).map(s => s.instituteCode?.toUpperCase()).filter(Boolean);
     return Array.from(new Set([...defaultCodes, ...dbCodes]));
   }, [instituteSettings]);
@@ -2191,12 +2194,30 @@ export default function AdminDashboard() {
                     <div>
                       <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Registration Form Responses</p>
                       <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                        {selectedRsvpFields.map((field, idx) => (
-                          <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
-                            <span className="text-slate-500 font-semibold block">{field.label}</span>
-                            <span className="text-slate-900 font-medium break-words">{String(field.value)}</span>
-                          </div>
-                        ))}
+                        {selectedRsvpFields.map((field, idx) => {
+                          const strVal = String(field.value || '');
+                          const isFileOrLink = strVal.startsWith('/uploads/') || strVal.startsWith('http://') || strVal.startsWith('https://');
+
+                          return (
+                            <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
+                              <span className="text-slate-500 font-semibold block">{field.label}</span>
+                              {isFileOrLink ? (
+                                <a
+                                  href={strVal}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-bold underline mt-1"
+                                >
+                                  <FileText className="w-3.5 h-3.5" />
+                                  <span>View / Download Attachment</span>
+                                  <ExternalLink className="w-3 h-3 ml-0.5" />
+                                </a>
+                              ) : (
+                                <span className="text-slate-900 font-medium break-words">{strVal}</span>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
