@@ -330,7 +330,7 @@ export default function MRVMUNRegistration() {
                 <MapPin className="w-5 h-5 text-red-600 shrink-0" />
                 <div>
                   <span className="text-[11px] block uppercase text-slate-400 font-bold">Venue</span>
-                  <span className="font-semibold text-slate-900">MET Rishikul, Bandra (W)</span>
+                  <span className="font-semibold text-slate-900">MET Rishikul Vidyalaya, Bandra (W)</span>
                 </div>
               </div>
               <div className="flex items-center gap-2.5 text-slate-700 bg-emerald-50/70 p-3 rounded-2xl border border-emerald-100">
@@ -746,7 +746,7 @@ export default function MRVMUNRegistration() {
 
               <div className="text-center space-y-2 text-xs text-slate-500 pt-1">
                 <p className="text-slate-400">
-                  By clicking proceed, you will be directed to the official PayU gateway to complete your transaction safely.
+                  By clicking proceed, you will be directed to the official gateway to complete your transaction safely.
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-slate-600 font-medium">
                   <span>Questions? Write to <a href="mailto:mrvmun@met.edu" className="text-red-600 hover:underline font-semibold">mrvmun@met.edu</a></span>
@@ -765,7 +765,7 @@ export default function MRVMUNRegistration() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-slate-400 pb-8 space-y-1">
-          <p className="font-semibold text-slate-500">© {new Date().getFullYear()} MET Rishikul Vidyalaya • Model United Nations</p>
+          <p className="font-semibold text-slate-500">© {new Date().getFullYear()} MET Rishikul Vidyalaya</p>
           <p>Bhujbal Knowledge City, Bandra Reclamation, Bandra West, Mumbai 400050</p>
         </div>
 
