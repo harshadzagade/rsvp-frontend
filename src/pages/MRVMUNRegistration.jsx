@@ -13,7 +13,8 @@ import {
   Globe2,
   HelpCircle,
   FileCheck2,
-  AlertTriangle
+  AlertTriangle,
+  Phone
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import mrvMunLogo from '../assets/MRV_MUN_logo.png';
@@ -352,17 +353,49 @@ export default function MRVMUNRegistration() {
                 <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
                 <div>
                   <strong className="block text-amber-900 uppercase tracking-wide text-xs">DISCLAIMER:</strong>
-                  This registration form is for <strong>non-MRV students only</strong>. MRV students must register through the link sent on MCB.
+                    The fees will be <strong>non-refundable</strong>. MRV students must register through MCB.
                 </div>
               </div>
 
-              {/* Support Inquiries */}
-              <div className="pt-1 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 border-t border-amber-200/60">
-                <div className="flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-red-600" />
-                  <span>Feel free to reach out regarding any inquiries: <a href="mailto:mrvmun@met.edu" className="font-bold text-red-700 hover:underline">mrvmun@met.edu</a></span>
+              {/* Support Inquiries & Contacts */}
+              <div className="pt-3 border-t border-amber-200/60 text-xs text-slate-600 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                    <span>Email inquiries: <a href="mailto:mrvmun@met.edu" className="font-bold text-red-700 hover:underline">mrvmun@met.edu</a></span>
+                  </div>
+                  <span className="font-semibold text-slate-700 italic">See you there!! — The MRV MUN Team</span>
                 </div>
-                <span className="font-semibold text-slate-700 italic">See you there!! — The MRV MUN Team</span>
+
+                <div className="bg-amber-100/70 rounded-xl p-3 border border-amber-300/80">
+                  <p className="font-bold text-slate-800 text-[11px] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-red-600" />
+                    <span>Feel free to reach out to our team:</span>
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <a 
+                      href="tel:+919987474732" 
+                      className="flex items-center justify-between sm:justify-start gap-1.5 bg-white/95 hover:bg-white text-slate-800 hover:text-red-700 px-3 py-2 rounded-lg border border-amber-200/90 transition shadow-2xs font-medium text-xs"
+                    >
+                      <span className="text-slate-600 font-semibold">Jash Nagrecha:</span>
+                      <span className="font-bold text-red-700 sm:text-slate-900">9987474732</span>
+                    </a>
+                    <a 
+                      href="tel:+917710036873" 
+                      className="flex items-center justify-between sm:justify-start gap-1.5 bg-white/95 hover:bg-white text-slate-800 hover:text-red-700 px-3 py-2 rounded-lg border border-amber-200/90 transition shadow-2xs font-medium text-xs"
+                    >
+                      <span className="text-slate-600 font-semibold">Janmesh Sheth:</span>
+                      <span className="font-bold text-red-700 sm:text-slate-900">7710036873</span>
+                    </a>
+                    <a 
+                      href="tel:+919892086601" 
+                      className="flex items-center justify-between sm:justify-start gap-1.5 bg-white/95 hover:bg-white text-slate-800 hover:text-red-700 px-3 py-2 rounded-lg border border-amber-200/90 transition shadow-2xs font-medium text-xs"
+                    >
+                      <span className="text-slate-600 font-semibold">Snehal Metkar:</span>
+                      <span className="font-bold text-red-700 sm:text-slate-900">9892086601</span>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -711,13 +744,19 @@ export default function MRVMUNRegistration() {
                 )}
               </button>
 
-              <div className="text-center space-y-1 text-xs text-slate-400">
-                <p>
+              <div className="text-center space-y-2 text-xs text-slate-500 pt-1">
+                <p className="text-slate-400">
                   By clicking proceed, you will be directed to the official PayU gateway to complete your transaction safely.
                 </p>
-                <p>
-                  Questions? Write to us at <a href="mailto:mrvmun@met.edu" className="text-red-600 hover:underline font-semibold">mrvmun@met.edu</a>
-                </p>
+                <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-slate-600 font-medium">
+                  <span>Questions? Write to <a href="mailto:mrvmun@met.edu" className="text-red-600 hover:underline font-semibold">mrvmun@met.edu</a></span>
+                  <span className="hidden sm:inline text-slate-300">•</span>
+                  <span>Call: <a href="tel:+919987474732" className="hover:text-red-600 font-semibold">Jash (9987474732)</a></span>
+                  <span className="hidden sm:inline text-slate-300">•</span>
+                  <span><a href="tel:+917710036873" className="hover:text-red-600 font-semibold">Janmesh (7710036873)</a></span>
+                  <span className="hidden sm:inline text-slate-300">•</span>
+                  <span><a href="tel:+919892086601" className="hover:text-red-600 font-semibold">Snehal (9892086601)</a></span>
+                </div>
               </div>
             </div>
 
