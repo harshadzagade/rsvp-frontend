@@ -144,7 +144,7 @@ const getRsvpMobile = (r) => {
 };
 
 const getPayUDetails = (r) => {
-  if (!r) return { txnid: '-', mode: '', modeLabel: '-', field9: '', bankRefNum: '', bankCode: '', pgType: '' };
+  if (!r) return { txnid: '-', mode: '', modeLabel: '-', remarks: '-', field9: '', bankRefNum: '', bankCode: '', pgType: '' };
 
   const txnid = r.txnid || r.payment?.txnid || '-';
   let pr = r.payment?.payuResponse || {};
@@ -168,14 +168,25 @@ const getPayUDetails = (r) => {
     }
   }
 
+  // Handle nested transaction_details from verify_payment
+  const td = (pr && pr.transaction_details && typeof pr.transaction_details === 'object')
+    ? (pr.transaction_details[txnid] || Object.values(pr.transaction_details)[0] || {})
+    : {};
+
   const findVal = (key) => {
+    // 1. Direct top-level of payuResponse
     if (pr && pr[key] !== undefined && pr[key] !== null && String(pr[key]).trim() !== '') {
       return String(pr[key]).trim();
     }
+    // 2. Nested under transaction_details
+    if (td && td[key] !== undefined && td[key] !== null && String(td[key]).trim() !== '') {
+      return String(td[key]).trim();
+    }
+    // 3. Raw string regex
     if (rawStr) {
-      const regex = new RegExp(`['"]${key}['"]\\s*:\\s*['"]([^'"]+)['"]`, 'i');
+      const regex = new RegExp(`['"]${key}['"]\\s*:\\s*['"]([^'"]*)['"]`, 'i');
       const m = rawStr.match(regex);
-      if (m && m[1]) return m[1].trim();
+      if (m && m[1] !== undefined && m[1].trim() !== '') return m[1].trim();
     }
     return '';
   };
@@ -186,6 +197,24 @@ const getPayUDetails = (r) => {
   const bankCode = findVal('bankcode') || findVal('bankCode');
   const pgType = findVal('PG_TYPE') || findVal('pg_type');
   const field8 = findVal('field8');
+  const errorMessage = findVal('error_Message') || findVal('error_message') || findVal('msg');
+  const unmappedStatus = findVal('unmappedstatus');
+
+  // Exact remarks from the gateway (NO fake fabricated strings)
+  let remarks = '-';
+  if (field9) {
+    remarks = field9;
+  } else if (errorMessage && !['no error', 'success', 'none'].includes(errorMessage.toLowerCase())) {
+    remarks = errorMessage;
+  } else if (unmappedStatus) {
+    remarks = `Status: ${unmappedStatus}`;
+  } else if (r.status === 'success' && (r.payment?.status === 'free' || getRsvpAmount(r) === 0)) {
+    remarks = 'Free Registration';
+  } else if (r.status === 'initiated') {
+    remarks = 'Payment Initiated (Awaiting gateway callback)';
+  } else if (r.status) {
+    remarks = r.status.toUpperCase();
+  }
 
   // Human-friendly label for Payment Mode
   let modeLabel = mode;
@@ -193,7 +222,7 @@ const getPayUDetails = (r) => {
 
   if (r.status === 'success' && (r.payment?.status === 'free' || getRsvpAmount(r) === 0)) {
     modeLabel = 'Free Registration';
-  } else if (upperMode === 'UPI') {
+  } else if (upperMode === 'UPI' || upperMode === 'UPIPPI') {
     if (field8 && !field8.toLowerCase().includes('null')) {
       modeLabel = `UPI (${field8.toUpperCase()})`;
     } else if (bankCode && bankCode.toUpperCase() !== 'INTENT') {
@@ -223,11 +252,13 @@ const getPayUDetails = (r) => {
     txnid,
     mode: mode || '',
     modeLabel,
+    remarks,
     field9: field9 || '',
     bankRefNum: bankRefNum || '',
     bankCode: bankCode || '',
     pgType: pgType || '',
     field8: field8 || '',
+    errorMessage: errorMessage || '',
   };
 };
 
@@ -564,7 +595,19 @@ export default function AdminDashboard() {
       const data = response.data;
       if (data.success) {
         setRsvps((prev) =>
-          prev.map((r) => (r.txnid === txnid ? { ...r, status: data.newStatus } : r))
+          prev.map((r) => {
+            if (r.txnid === txnid) {
+              if (data.rsvp) {
+                return data.rsvp;
+              }
+              return {
+                ...r,
+                status: data.newStatus,
+                payment: data.payment || r.payment,
+              };
+            }
+            return r;
+          })
         );
         Swal.fire({
           icon: data.newStatus === 'success' ? 'success' : 'info',
@@ -960,7 +1003,7 @@ export default function AdminDashboard() {
           'Amount (Rs.)': amount,
           'Payment Mode': payu.modeLabel || '-',
           'Transaction ID': rsvp.txnid || '-',
-          'Field 9': payu.field9 || '-',
+          'Gateway Remarks': payu.remarks || '-',
           'Bank Ref No': payu.bankRefNum || '-',
           'Registration Date': formatDateTime(rsvp.createdAt),
         };
@@ -2430,11 +2473,11 @@ export default function AdminDashboard() {
                           </div>
                         </div>
 
-                        {/* PayU Field 9 */}
+                        {/* Gateway Remarks / Note */}
                         <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
-                          <span className="text-slate-500 font-bold text-[10px] uppercase tracking-wider block">Field 9 (PayU Status Note)</span>
-                          <p className="font-mono text-slate-700 text-xs mt-1 break-words bg-slate-50 p-2 rounded-lg border border-slate-100">
-                            {selectedPayu.field9 || (selectedRsvp.status === 'success' ? 'Success | Completed' : 'Pending / Not Available')}
+                          <span className="text-slate-500 font-bold text-[10px] uppercase tracking-wider block">Gateway Remarks / Bank Note</span>
+                          <p className="font-mono text-slate-800 text-xs mt-1 break-words bg-slate-50 p-2 rounded-lg border border-slate-100 font-medium">
+                            {selectedPayu.remarks || '-'}
                           </p>
                         </div>
                       </div>
