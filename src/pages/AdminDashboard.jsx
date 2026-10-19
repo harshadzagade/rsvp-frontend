@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import {
   Link2, Power, Edit3, CheckCircle, XCircle, Copy, Plus, Trash2, X, Eye, EyeOff,
   Settings, Users, ShieldCheck, Key, Mail, MessageSquare, Save, Check, UserPlus,
-  Palette, Layout, Sparkles, FileText, ExternalLink, RefreshCw
+  Palette, Layout, Sparkles, FileText, ExternalLink, RefreshCw, CreditCard, Smartphone
 } from 'lucide-react';
 
 const inferInstitute = (eventTitle = '', slug = '', venue = '', eventInstitute = '') => {
@@ -143,6 +143,103 @@ const getRsvpMobile = (r) => {
   return extractField(data, ['mobile', 'whatsappnumber', 'contactnumber', 'phone', 'contact']) || '-';
 };
 
+const getPayUDetails = (r) => {
+  if (!r) return { txnid: '-', mode: '', modeLabel: '-', field9: '', bankRefNum: '', bankCode: '', pgType: '' };
+
+  const txnid = r.txnid || r.payment?.txnid || '-';
+  let pr = r.payment?.payuResponse || {};
+
+  if (typeof pr === 'string') {
+    try {
+      pr = JSON.parse(pr);
+    } catch (e) {
+      // not json
+    }
+  }
+
+  let rawStr = '';
+  if (pr && typeof pr.raw === 'string') {
+    rawStr = pr.raw;
+    try {
+      const parsed = JSON.parse(pr.raw);
+      pr = { ...parsed, ...pr };
+    } catch (e) {
+      // not json string
+    }
+  }
+
+  const findVal = (key) => {
+    if (pr && pr[key] !== undefined && pr[key] !== null && String(pr[key]).trim() !== '') {
+      return String(pr[key]).trim();
+    }
+    if (rawStr) {
+      const regex = new RegExp(`['"]${key}['"]\\s*:\\s*['"]([^'"]+)['"]`, 'i');
+      const m = rawStr.match(regex);
+      if (m && m[1]) return m[1].trim();
+    }
+    return '';
+  };
+
+  const mode = findVal('mode');
+  const field9 = findVal('field9');
+  const bankRefNum = findVal('bank_ref_num') || findVal('bankRefNum');
+  const bankCode = findVal('bankcode') || findVal('bankCode');
+  const pgType = findVal('PG_TYPE') || findVal('pg_type');
+  const field8 = findVal('field8');
+
+  // Human-friendly label for Payment Mode
+  let modeLabel = mode;
+  const upperMode = (mode || '').toUpperCase();
+
+  if (r.status === 'success' && (r.payment?.status === 'free' || getRsvpAmount(r) === 0)) {
+    modeLabel = 'Free Registration';
+  } else if (upperMode === 'UPI') {
+    if (field8 && !field8.toLowerCase().includes('null')) {
+      modeLabel = `UPI (${field8.toUpperCase()})`;
+    } else if (bankCode && bankCode.toUpperCase() !== 'INTENT') {
+      modeLabel = `UPI (${bankCode})`;
+    } else {
+      modeLabel = 'UPI';
+    }
+  } else if (upperMode === 'CC') {
+    modeLabel = 'Credit Card';
+  } else if (upperMode === 'DC') {
+    modeLabel = 'Debit Card';
+  } else if (upperMode === 'NB') {
+    modeLabel = bankCode ? `Net Banking (${bankCode})` : 'Net Banking';
+  } else if (upperMode === 'CASH') {
+    modeLabel = 'Cash';
+  } else if (upperMode === 'EMI') {
+    modeLabel = 'EMI';
+  } else if (upperMode === 'NEFTRTGS') {
+    modeLabel = 'NEFT / RTGS';
+  } else if (!mode && (r.status === 'initiated' || r.status === 'pending')) {
+    modeLabel = 'Incomplete';
+  } else if (!mode) {
+    modeLabel = r.status === 'success' ? 'Online' : '-';
+  }
+
+  return {
+    txnid,
+    mode: mode || '',
+    modeLabel,
+    field9: field9 || '',
+    bankRefNum: bankRefNum || '',
+    bankCode: bankCode || '',
+    pgType: pgType || '',
+    field8: field8 || '',
+  };
+};
+
+const getPaymentModeBadge = (mode = '') => {
+  const m = (mode || '').toUpperCase();
+  if (m.includes('UPI')) return 'bg-purple-100 text-purple-800 border-purple-200';
+  if (m.includes('CARD') || m === 'CC' || m === 'DC') return 'bg-blue-100 text-blue-800 border-blue-200';
+  if (m.includes('NET BANKING') || m === 'NB') return 'bg-teal-100 text-teal-800 border-teal-200';
+  if (m.includes('FREE')) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+  return 'bg-slate-100 text-slate-700 border-slate-200';
+};
+
 const filterRsvps = (rsvps, filters) => {
   return rsvps.filter((rsvp) => {
     const title = rsvp.event?.title || '';
@@ -154,7 +251,8 @@ const filterRsvps = (rsvps, filters) => {
     const name = getRsvpName(rsvp);
     const email = getRsvpEmail(rsvp);
     const mobile = getRsvpMobile(rsvp);
-    const searchText = `${title} ${venue} ${name} ${email} ${mobile} ${rsvp.formData?.category || ''} ${rsvp.formData?.organisation || ''}`.toLowerCase();
+    const payu = getPayUDetails(rsvp);
+    const searchText = `${title} ${venue} ${name} ${email} ${mobile} ${rsvp.txnid || ''} ${payu.modeLabel || ''} ${payu.field9 || ''} ${rsvp.formData?.category || ''} ${rsvp.formData?.organisation || ''}`.toLowerCase();
 
     return (
       (!filters.search || searchText.includes(filters.search.toLowerCase())) &&
@@ -357,6 +455,11 @@ export default function AdminDashboard() {
   const selectedRsvp = useMemo(
     () => filteredRsvps.find((rsvp) => rsvp.id === selectedRsvpId) || null,
     [filteredRsvps, selectedRsvpId]
+  );
+
+  const selectedPayu = useMemo(
+    () => getPayUDetails(selectedRsvp),
+    [selectedRsvp]
   );
 
   const selectedRsvpFields = useMemo(() => {
@@ -842,6 +945,7 @@ export default function AdminDashboard() {
         const email = getRsvpEmail(rsvp);
         const mobile = getRsvpMobile(rsvp);
         const amount = getRsvpAmount(rsvp);
+        const payu = getPayUDetails(rsvp);
 
         const row = {
           'RSVP ID': rsvp.id,
@@ -854,7 +958,10 @@ export default function AdminDashboard() {
           'Venue': venue,
           'Status': rsvp.status?.toUpperCase() || 'INITIATED',
           'Amount (Rs.)': amount,
+          'Payment Mode': payu.modeLabel || '-',
           'Transaction ID': rsvp.txnid || '-',
+          'Field 9': payu.field9 || '-',
+          'Bank Ref No': payu.bankRefNum || '-',
           'Registration Date': formatDateTime(rsvp.createdAt),
         };
 
@@ -2189,6 +2296,7 @@ export default function AdminDashboard() {
                       {filteredRsvps.map((r) => {
                         const isSelected = r.id === selectedRsvpId;
                         const inst = inferInstitute(r.event?.title, r.event?.slug || '', r.event?.venue, r.event?.institute);
+                        const payu = getPayUDetails(r);
 
                         return (
                           <tr
@@ -2208,9 +2316,21 @@ export default function AdminDashboard() {
                               <p className="text-slate-800 font-medium line-clamp-1 mt-0.5">{r.event?.title || 'Unknown'}</p>
                             </td>
                             <td className="py-3 px-3">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusClasses(r.status)}`}>
-                                {r.status || 'initiated'}
-                              </span>
+                              <div className="flex flex-col gap-1 items-start">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusClasses(r.status)}`}>
+                                  {r.status || 'initiated'}
+                                </span>
+                                {payu.modeLabel && payu.modeLabel !== '-' && (
+                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${getPaymentModeBadge(payu.modeLabel)}`}>
+                                    {payu.modeLabel}
+                                  </span>
+                                )}
+                                {r.txnid && (
+                                  <span className="text-[9px] font-mono text-slate-400 truncate max-w-[125px]" title={r.txnid}>
+                                    {r.txnid}
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="py-3 px-3 font-semibold text-slate-800">
                               {formatMoney(getRsvpAmount(r))}
@@ -2239,16 +2359,83 @@ export default function AdminDashboard() {
                       <p className="text-xs font-mono text-slate-500 mt-0.5">{getRsvpEmail(selectedRsvp)}</p>
                       <p className="text-xs text-slate-600">{getRsvpMobile(selectedRsvp)}</p>
 
-                      <div className="mt-3 pt-3 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <span className="text-slate-400">Payment Status:</span>
-                          <p className={`font-bold uppercase ${selectedRsvp.status === 'success' ? 'text-emerald-700' : selectedRsvp.status === 'initiated' ? 'text-amber-600' : 'text-red-600'}`}>
-                            {selectedRsvp.status}
+                      {/* Payment & Gateway Breakdown */}
+                      <div className="mt-3 pt-3 border-t border-slate-200 space-y-2.5 text-xs">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <span className="text-slate-400 block text-[11px]">Payment Status:</span>
+                            <span className={`inline-block px-2 py-0.5 rounded-full font-bold uppercase text-[10px] mt-0.5 ${getStatusClasses(selectedRsvp.status)}`}>
+                              {selectedRsvp.status || 'initiated'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[11px]">Fee / Paid:</span>
+                            <p className="font-bold text-slate-900 text-sm mt-0.5">{formatMoney(getRsvpAmount(selectedRsvp))}</p>
+                          </div>
+                        </div>
+
+                        {/* Transaction ID */}
+                        <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-500 font-bold text-[10px] uppercase tracking-wider">Transaction ID (txnid)</span>
+                            {selectedRsvp.txnid && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(selectedRsvp.txnid);
+                                  Swal.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: 'Txn ID copied!',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                  });
+                                }}
+                                className="text-slate-400 hover:text-slate-700 text-[10px] flex items-center gap-1 cursor-pointer"
+                                title="Copy Txn ID"
+                              >
+                                <Copy className="w-3 h-3" />
+                                <span>Copy</span>
+                              </button>
+                            )}
+                          </div>
+                          <p className="font-mono text-slate-900 font-bold text-xs mt-1 break-all select-all">
+                            {selectedRsvp.txnid || '-'}
                           </p>
                         </div>
-                        <div>
-                          <span className="text-slate-400">Fee:</span>
-                          <p className="font-bold text-slate-900">{formatMoney(getRsvpAmount(selectedRsvp))}</p>
+
+                        {/* Payment Mode & Bank Ref */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                            <span className="text-slate-500 font-bold text-[10px] uppercase tracking-wider block">Payment Mode</span>
+                            <div className="mt-1 flex items-center gap-1.5">
+                              <span className={`inline-block px-2 py-0.5 rounded font-bold text-xs border ${getPaymentModeBadge(selectedPayu.modeLabel)}`}>
+                                {selectedPayu.modeLabel || (selectedRsvp.status === 'success' ? 'Online' : 'Pending')}
+                              </span>
+                            </div>
+                            {selectedPayu.mode && (
+                              <span className="text-[10px] text-slate-400 block mt-0.5 font-mono">
+                                Gateway: {selectedPayu.mode}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                            <span className="text-slate-500 font-bold text-[10px] uppercase tracking-wider block">Bank Ref No</span>
+                            <p className="font-mono text-slate-800 font-semibold text-xs mt-1 truncate" title={selectedPayu.bankRefNum || '-'}>
+                              {selectedPayu.bankRefNum || '-'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* PayU Field 9 */}
+                        <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                          <span className="text-slate-500 font-bold text-[10px] uppercase tracking-wider block">Field 9 (PayU Status Note)</span>
+                          <p className="font-mono text-slate-700 text-xs mt-1 break-words bg-slate-50 p-2 rounded-lg border border-slate-100">
+                            {selectedPayu.field9 || (selectedRsvp.status === 'success' ? 'Success | Completed' : 'Pending / Not Available')}
+                          </p>
                         </div>
                       </div>
 
@@ -2259,7 +2446,7 @@ export default function AdminDashboard() {
                             type="button"
                             onClick={() => handleVerifyPayment(selectedRsvp.txnid)}
                             disabled={verifyingTxn === selectedRsvp.txnid}
-                            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 font-bold text-xs transition disabled:opacity-50"
+                            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 font-bold text-xs transition disabled:opacity-50 cursor-pointer"
                           >
                             <RefreshCw className={`w-3.5 h-3.5 ${verifyingTxn === selectedRsvp.txnid ? 'animate-spin text-blue-600' : ''}`} />
                             <span>{verifyingTxn === selectedRsvp.txnid ? 'Verifying with PayU...' : 'Verify Status with PayU'}</span>
