@@ -122,6 +122,10 @@ export default function MRVMUNRegistration() {
 
   const [errors, setErrors] = useState({});
 
+  const currentFee = event?.fee !== undefined && event?.fee !== null ? Number(event.fee) : 2500;
+  const isFree = currentFee === 0;
+  const formattedFee = isFree ? 'Free' : `₹${currentFee.toLocaleString('en-IN')}`;
+
   useEffect(() => {
     // Fetch event details by slug
     fetch(`${API_BASE}/events/slug/mrv-mun`)
@@ -332,7 +336,7 @@ export default function MRVMUNRegistration() {
                 <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
                 <div>
                   <span className="text-[11px] block uppercase text-emerald-600 font-bold">Delegate Fee</span>
-                  <span className="font-extrabold text-slate-900 text-base">₹2,500</span>
+                  <span className="font-extrabold text-slate-900 text-base">{formattedFee}</span>
                 </div>
               </div>
             </div>
@@ -683,27 +687,27 @@ export default function MRVMUNRegistration() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-red-50 via-rose-50 to-amber-50 border border-red-200 rounded-2xl p-5 gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-wider font-bold text-red-700">Delegate Registration Fee</p>
-                  <p className="text-3xl font-extrabold text-slate-900 mt-0.5">₹2,500</p>
+                  <p className="text-3xl font-extrabold text-slate-900 mt-0.5">{formattedFee}</p>
                   <p className="text-xs text-slate-500 mt-1">Includes conference access, committee materials, and participation certificate</p>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-emerald-800 bg-white/90 px-3.5 py-2 rounded-xl border border-emerald-200 font-semibold shadow-sm self-start sm:self-auto">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Secure PayU Payment</span>
+                  <span>{isFree ? '100% Free Entry' : 'Secure PayU Payment'}</span>
                 </div>
               </div>
 
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || loading}
                 className="w-full bg-[#C8282B] hover:bg-red-700 text-white font-extrabold py-4 px-6 rounded-2xl shadow-md hover:shadow-lg transition duration-200 flex items-center justify-center gap-2.5 text-base disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
               >
                 {submitting ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Proceeding to Payment Gateway...</span>
+                    <span>{isFree ? 'Completing Registration...' : 'Proceeding to Payment Gateway...'}</span>
                   </>
                 ) : (
-                  <span>Proceed to Payment • ₹2,500</span>
+                  <span>{isFree ? 'Complete Registration (Free)' : `Proceed to Payment • ${formattedFee}`}</span>
                 )}
               </button>
 
