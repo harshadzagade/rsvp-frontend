@@ -16,6 +16,7 @@ import ConferenceLandingPage from './pages/landing/ConferenceLandingPage';
 import SFXLandingPage from './pages/landing/SFXLandingPage';
 import FeeReceipt from './pages/FeeReceipt';
 import MRVMUNRegistration from './pages/MRVMUNRegistration';
+import PGDMHRConclave from './pages/landing/PGDMHRConclave';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -36,6 +37,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
         {/* MRV MUN Registration Route */}
         <Route path="/mrv-mun" element={<MRVMUNRegistration />} />
+
+        {/* National HR Conclave 2026 Route */}
+        <Route path="/pgdm-hr-conclave" element={<PGDMHRConclave />} />
 
         {/* Important: Catch-all slug route should go LAST */}
         <Route path="/:slug" element={<ConferenceLandingPage />} />
