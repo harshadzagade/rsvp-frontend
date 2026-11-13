@@ -348,6 +348,21 @@ export default function MRVMUNRegistration() {
                 We are thrilled to announce <strong>MRV MUN's 4th edition</strong>, an inter-school Model United Nations conference at <strong>MET Rishikul Vidyalaya</strong>. Calling all bright minds from <strong>Grades 6 to 12</strong>, mark your calendars for the <strong>12th and 13th of December</strong>, as we gear up for an event that promises to be unforgettable! Earn yourself a certificate of participation and more!
               </p>
 
+              {/* School Delegation Switch */}
+              <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-3 p-4 bg-red-50/90 border border-red-200 rounded-2xl">
+                <div>
+                  <span className="block font-bold text-red-900 text-xs sm:text-sm">Registering a School Delegation?</span>
+                  <span className="text-xs text-red-700">Minimum 7 students required. Register all delegates together under your school banner.</span>
+                </div>
+                <a
+                  href="/mrv-mun-delegation"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-xs transition shrink-0"
+                >
+                  <span>School Delegation Registration</span>
+                  <span>→</span>
+                </a>
+              </div>
+
               {/* Disclaimer */}
               <div className="flex items-start gap-2.5 p-3.5 bg-amber-100/70 border border-amber-300/80 rounded-xl text-amber-950 font-medium">
                 <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />

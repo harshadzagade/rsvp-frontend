@@ -1012,7 +1012,15 @@ export default function AdminDashboard() {
           Object.entries(rsvp.formData).forEach(([k, v]) => {
             const cleanKey = normalizeLabel(k);
             if (!row[cleanKey] && v !== null && v !== undefined) {
-              row[cleanKey] = typeof v === 'object' ? JSON.stringify(v) : String(v);
+              if (Array.isArray(v)) {
+                row[cleanKey] = v.map((item, idx) =>
+                  typeof item === 'object'
+                    ? `${idx + 1}. ${item.fullName || item.name || ''} (${item.grade || ''}) - ${item.email || ''} [Choice 1: ${item.committeeChoice1 || item.choice1 || ''}, Choice 2: ${item.committeeChoice2 || item.choice2 || ''}]`
+                    : String(item)
+                ).join('; ');
+              } else {
+                row[cleanKey] = typeof v === 'object' ? JSON.stringify(v) : String(v);
+              }
             }
           });
         }
@@ -2505,10 +2513,31 @@ export default function AdminDashboard() {
                           const strVal = String(field.value || '');
                           const isFileOrLink = strVal.startsWith('/uploads/') || strVal.startsWith('http://') || strVal.startsWith('https://');
 
+                          const isArray = Array.isArray(field.value);
+
                           return (
                             <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
                               <span className="text-slate-500 font-semibold block">{field.label}</span>
-                              {isFileOrLink ? (
+                              {isArray ? (
+                                <div className="mt-2 space-y-2">
+                                  {field.value.map((del, dIdx) => (
+                                    <div key={dIdx} className="bg-white p-2.5 rounded-lg border border-slate-200 text-xs shadow-2xs">
+                                      <div className="flex items-center justify-between pb-1 border-b border-slate-100 font-bold text-slate-900">
+                                        <span>#{dIdx + 1} {del.fullName || del.name || 'Delegate'}</span>
+                                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700">{del.grade || '-'}</span>
+                                      </div>
+                                      <div className="mt-1 text-slate-600">
+                                        <span className="font-medium text-slate-500">Email:</span> {del.email || '-'}
+                                      </div>
+                                      <div className="mt-0.5 text-slate-600 flex flex-wrap gap-2 text-[11px]">
+                                        <span><strong className="text-slate-500">Choice 1:</strong> {del.committeeChoice1 || del.choice1 || '-'}</span>
+                                        <span>•</span>
+                                        <span><strong className="text-slate-500">Choice 2:</strong> {del.committeeChoice2 || del.choice2 || '-'}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : isFileOrLink ? (
                                 <a
                                   href={strVal}
                                   target="_blank"
@@ -2520,7 +2549,7 @@ export default function AdminDashboard() {
                                   <ExternalLink className="w-3 h-3 ml-0.5" />
                                 </a>
                               ) : (
-                                <span className="text-slate-900 font-medium break-words">{strVal}</span>
+                                <span className="text-slate-900 font-medium break-words whitespace-pre-wrap">{strVal}</span>
                               )}
                             </div>
                           );

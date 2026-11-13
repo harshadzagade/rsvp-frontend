@@ -16,6 +16,7 @@ import ConferenceLandingPage from './pages/landing/ConferenceLandingPage';
 import SFXLandingPage from './pages/landing/SFXLandingPage';
 import FeeReceipt from './pages/FeeReceipt';
 import MRVMUNRegistration from './pages/MRVMUNRegistration';
+import MRVMUNDelegationRegistration from './pages/MRVMUNDelegationRegistration';
 import PGDMHRConclave from './pages/landing/PGDMHRConclave';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -35,8 +36,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         {/* SFX Seminar Explicit Route */}
         <Route path="/imm-sfx-seminar" element={<SFXLandingPage />} />
 
-        {/* MRV MUN Registration Route */}
+        {/* MRV MUN Registration Routes */}
         <Route path="/mrv-mun" element={<MRVMUNRegistration />} />
+        <Route path="/mrv-mun-delegation" element={<MRVMUNDelegationRegistration />} />
+        <Route path="/mrv-mun-school-delegation" element={<MRVMUNDelegationRegistration />} />
 
         {/* National HR Conclave 2026 Route */}
         <Route path="/pgdm-hr-conclave" element={<PGDMHRConclave />} />
