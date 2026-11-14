@@ -309,7 +309,7 @@ export default function MRVMUNRegistration() {
                   </span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                  MRV MUN 2026 Delegate Registration
+                  MRV MUN 2026 Individual Registration
                 </h1>
                 <p className="text-sm font-medium text-slate-600">
                   Inter-School Model United Nations Conference at MET Rishikul Vidyalaya
